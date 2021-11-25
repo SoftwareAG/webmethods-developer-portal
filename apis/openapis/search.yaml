@@ -1,0 +1,289 @@
+openapi: 3.0.1
+info:
+  title: Portal Search API
+  version: "10.11"
+  description: |
+    ## Overview
+    The search API allows you to execute a search query in API Portal and receive search results that matches the search query.
+
+    ### Searchable assets
+
+    Following is the list of searchable objects and their corresponding searchable fields
+
+    | Search objects | Searchable fields |
+    | ----------- | ----------- |
+    | API | Id, Name, Description, Maturity status, Business terms, Tags, Communities, Type, Categories, Provider, Security schemes |
+    | Community | Id, Name, Description |
+    | Package | Id, Name, Description, Communities |
+    | Endpoint | Id, Name, Description, Communities, Base Url |
+    | Resource | Id, Name, Description, Communities, Path, Tags, Method Ids, API Id |
+    | Rest method | Id, Name, Description, Communities, Tags |
+    | Soap method | Id, Name, Description, Communities, API Id |
+    | Odata structure | Id, Name, Description, Communities |
+    | Odata operation | Id, Name, Description, Communities |
+    | Team | Name, Description |
+    | User | Name, Role |
+    | Group | Name, Ldap |
+
+    ## Functionalities supported
+    - Perform keyword search on name, description fields of API and Package.
+    - Perform advanced search on name, description fields of API, Package, Endpoint, Resource, Rest method,
+      Soap method, Odata structure, Odata operation
+    - Perform individual object search with the fields as mentioned in the table above
+
+    ## Authorization
+    - Anonymous and Authenticated users can search for assets
+    - Assets can be viewed according to the visibility enforced through community
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+paths:
+  /search:
+    get:
+      tags:
+        - Search
+        - Keyword
+      summary: Basic keyword search
+      description: This API is used to search the `APIs` or `Packages` matching the given input keyword. Case-insensitve keyword search would be done based on `Name` and `Description` fields of specific object types in scope.
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+          description: Optional page number to retrieve. Defaults to zero if not specified.
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+          description: Mandatory query parameter specifies the `keyword` to be searched.
+      responses:
+        200:
+          $ref: '#/components/responses/SearchResponse'
+  /search/basic:
+    post:
+      tags:
+        - Search
+        - Keyword
+      description: Lets you explore specific `type` of asset matching to given search criteria. `Group` can be searched by users having `API Administrator`/`API Provider` role.
+                   `User` and `Team` can be searched only by the authenticated users.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Optional page number to retrieve. Defaults to `zero` if not specified.
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+        - in: query
+          name: type
+          required: true
+          schema:
+            type: string
+            default: API
+          description: Specific type of objects to be searched for. Defaults to `API` if none specified. Possible values are `API`, `PACKAGE`, `ENDPOINT` , `ODATA_STRUCTURE`, `ODATA_OPERATION`, `RESOURCE`, `RESTMETHOD`, `METHOD`, `COMMUNITY`, `TEAM`, `GROUP`, `USER`
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            examples:
+              BasicSearchExample:
+                $ref: '#/components/examples/SearchRequest'
+      responses:
+        200:
+          $ref: '#/components/responses/SearchResponse'
+  /search/advanced:
+    get:
+      description: Advanced search API lets you to discover the assets by given keyword. Advanced search provides a metric which captures the number of assets matching given criteria in each asset type and also provides a detailed result on specific asset identified by `type`.
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+          description: Optional page number to retrieve. Defaults to `zero` if not specified.
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+          description: Mandatory query parameter specifies the `keyword` to be searched.
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+            default: API
+          description: Specific type of objects to be searched for. Defaults to `API` if none specified. Possible values are `API`, `PACKAGE`, `ENDPOINT` , `ODATA_STRUCTURE`, `ODATA_OPERATION`, `RESOURCE`, `RESTMETHOD`, `METHOD`, `COMMUNITY`, `TEAM`, `GROUP`, `USER`
+      responses:
+        200:
+          $ref: '#/components/responses/AdvancedSearchResponse'
+
+components:
+  schemas:
+    SearchResponse:
+      type: object
+      description: Generic paginated search result
+      properties:
+        result:
+          type: array
+          description: Result list
+          items:
+            $ref: '#/components/schemas/BasicObject'
+        count:
+          type: integer
+          description: Total number of results available
+        _links:
+          type: object
+          description: Links of current and next page
+          properties:
+            _self:
+              description: Link for current page
+              type: string
+            _next:
+              description: Optional link for the next page. Will be missing if the next page does not exist.
+              type: string
+    BasicObject:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          description: Unique identifier of the object
+          type: string
+        name:
+          description: Name of the object
+          type: string
+        summary:
+          description: Short summary of the object
+          type: string
+        description:
+          description: Long description of the object
+          type: string
+        owner:
+          description: Refers to the uuid of the user who owns the object
+          type: string
+    SearchRequest:
+      type: object
+      properties:
+        conjunction:
+          description: Conjunction to be used when working with multiple search criterias. Possible values `AND` , `OR`
+          type: string
+          enum:
+            - AND
+            - OR
+        criterias:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criteria'
+    Criteria:
+      type: object
+      properties:
+        field:
+          description: Search field to be used.
+          type: string
+        operation:
+          description: Search operation to be used. Either `CONTAINS` or `EQUALS`
+          type: string
+          enum:
+            - CONTAINS
+            - EQUALS
+        values:
+          description: Collection of values to be searched for
+          type: array
+          items:
+            type: string
+    AdvancedSearchResponse:
+      type: object
+      description: Advanced search result
+      properties:
+        response:
+          $ref: '#/components/schemas/SearchResponse'
+        metrics:
+          type: object
+          description: Count of matching results for the given keyword in each of the other object types.
+          additionalProperties: true
+
+  examples:
+    SearchResponseExample:
+      value:
+        count: 1
+        _links:
+          _self: /rest/v1/search?q=pet&page=0
+        result:
+          - id: 3631fc19-68f0-4cd3-87d4-e428031dcec9
+            name: Swagger Petstore
+            summary: This is a sample server Petstore server. You can find out more about Swagger at http://swagger.io
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+    SearchRequest:
+      value:
+        conjunction: AND
+        criterias:
+          - field: name
+            values:
+              - Pet
+              - User
+            operation: CONTAINS
+          - field: communities
+            values:
+              - 3bdf8005-5685-3ef5-b132-de4681963fb6
+            operation: EQUALS
+    AdvancedSearchResponseExample:
+      value:
+        response:
+          result:
+            - id: 3631fc19-68f0-4cd3-87d4-e428031dcec9
+              name: Healthcare
+              summary: Bundle of healthcare related APIs
+              owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+          count: 1
+          _links:
+            _self: /rest/v1/search?q=Health&page=0
+        metrics:
+          PACKAGE: 1
+
+  responses:
+    SearchResponse:
+      description: Search result reponse
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+          examples:
+            SearchResponseExample:
+              $ref: '#/components/examples/SearchResponseExample'
+    AdvancedSearchResponse:
+      description: Advanced search response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdvancedSearchResponse'
+          examples:
+            SearchResponseExample:
+              $ref: '#/components/examples/AdvancedSearchResponseExample'
+
+

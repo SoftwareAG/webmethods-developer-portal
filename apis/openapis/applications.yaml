@@ -1,0 +1,1026 @@
+openapi: 3.0.1
+info:
+  title: Portal Applications API
+  description: |
+    ## Overview
+    Applications are used for accessing APIs at runtime to enforce certain runtime rules
+      - Consumer User Identification
+      - Protect APIs' access at runtime by defining and enforcing various type of access tokens like
+          - API Key
+          - OAuth2
+          - JWT
+      - Define and enforce Service-Level Agrrement between provider and consumer
+      - Trace the runtime logs for the usage of application.
+
+
+    ## Details
+    An application defines the precise identifiers by which messages/requests from a particular consumer
+    application is recognized at run time.
+    An application contains the security informations like access tokens only by which the APIs can be accessed.
+
+    The identifiers can be, for example, user name in HTTP
+    headers, a range of IP addresses, such that API Portal can identify or authenticate the applications
+    that are requesting an API.
+
+    The ability of API Portal to relate a message to a specific application enables it to:
+
+     - Control access to an API at run time (that is, allow only authorized applications to invoke an
+    API).
+     - Monitor an API for violations of a Service-Level Agreement (SLA) for a specified application.
+     - Indicate the application to which a logged transaction event belongs.
+
+    ## Types of Applications
+      - API
+
+        Used for accessing APIs with defined cosumer identification and access tokens.
+
+      - Subscription
+
+        In addition to API type, it has defined SLAs and Cost structure through packages and plans.
+
+    ## Application API
+    The Application REST endpoint provides below capabilities to manage its details.
+      - By Administrators
+        - Create/Update/Delete applications (by Administrators)
+
+          Note : In prior, the actual requests will be raised by consumer as UserRequests entity.
+          For mode details, please refer 'Portal UserRequests API'
+        - Find all applications of all users
+
+      - By Owner of the application and/or Users with READ/UPDATE permissions on the Application:
+        - Get all applications
+        - Add/Remove APIs to/from applications
+        - Get APIs of applications
+        - Share/Unshare applications to Team and/or other users
+        - Create/Delete JWT Token for application
+        - Find all User Requests associated to the application
+
+
+
+  version: "10.11"
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+paths:
+  /applications:
+    get:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Get all the applications of the current user
+      parameters:
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: '#/components/responses/SearchResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Create an application with the given data
+      requestBody:
+        description: Create application payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+            examples:
+              application:
+                $ref: '#/components/examples/Application'
+      responses:
+        "201":
+          $ref: '#/components/responses/CreatedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /applications/{id}:
+    get:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Get a particular application given by the id
+      responses:
+        "200":
+          $ref: '#/components/responses/Application'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Update an application given by the id
+      requestBody:
+        description: Application update payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+            examples:
+              application:
+                $ref: '#/components/examples/Application'
+      responses:
+        "200":
+          $ref: '#/components/responses/ApplicationUpdateResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Delete a particular application given by the id
+      responses:
+        "204":
+          description: Application deleted successfully
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+  /applications/{id}/share:
+    put:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Share application to team or user
+      requestBody:
+        description: Application update payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessControlList'
+            examples:
+              AccessControl:
+                $ref: '#/components/examples/AccessControlList'
+      responses:
+        "200":
+          $ref: '#/components/responses/ApplicationSharedResponse'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+    delete:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Unshare application to team or user
+      responses:
+        "200":
+          $ref: '#/components/responses/ApplicationUnsharedResponse'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+  /applications/_all:
+    get:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Get all the applications of all users
+      parameters:
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: '#/components/responses/SearchResponse'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /applications/{id}/requests:
+    get:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Get the all the user requests for this application
+      parameters:
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: '#/components/responses/UserRequestListResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+
+  /applications/{id}/tokens:
+    get:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Get specified type of tokens generated for the application
+      parameters:
+        - name: type
+          in: query
+          description: type of access token; applicable values 'OAUTH', 'JWT'. Default value 'OAUTH'
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: '#/components/responses/AccessTokenListResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+
+  /applications/{id}/tokens/{tokenId}:
+    delete:
+      tags:
+        - Application
+        - Subscription
+        - User Request
+      summary: Delete the specified token for the given application
+      responses:
+        "204":
+          description: Token deleted successfully
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+
+      - name: tokenId
+        in: path
+        description: Unique identifier of the token
+        required: true
+        schema:
+          type: string
+
+  /applications/{id}/scopes:
+    get:
+      tags:
+        - Application
+      summary: Get the scopes associated with the application
+      description: Get the scopes associated with the application
+      responses:
+        "200":
+          $ref: '#/components/responses/ScopesList'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of an application
+        required: true
+        schema:
+          type: string
+      - name: apiId
+        in: query
+        required: false
+        description: Unique identifier of an API
+        schema:
+          type: string
+
+components:
+  schemas:
+    AccessControlList:
+      type: object
+      description: contains details of the teams and users whoc has access rights for the application
+      properties:
+        teams:
+          type: array
+          items:
+            type: string
+        users:
+          type: array
+          items:
+            type: string
+    UserRequestType:
+      type: string
+      enum:
+        - APPLICATION_CREATION_REQUEST
+        - APPLICATION_API_REGISTRATION_REQUEST
+        - APPLICATION_API_DEREGISTRATION_REQUEST
+        - APPLICATION_UPDATE_REQUEST
+        - SUBSCRIPTION_REVOKE_REQUEST
+        - SUBSCRIPTION_CREATION_REQUEST
+    ApplicationState:
+      type: string
+      enum:
+        - INACTIVE
+        - LIVE
+        - REJECTED
+    Error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    SearchResponse:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+
+    AccessTokenResponse:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessToken'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+    CreatedResponse:
+      required:
+        - id
+        - _self
+      type: object
+      properties:
+        id:
+          type: string
+        _self:
+          type: string
+    ApplicationSharedUnsharedResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    ApplicationType:
+      type: string
+      description: Type of the Application. Possible values 'API','SUBSCRIPTION'
+      enum:
+        - API
+        - SUBSCRIPTION
+    Pagination:
+      required:
+        - _self
+      type: object
+      properties:
+        _self:
+          type: string
+        _next:
+          type: string
+    UserRequestStatus:
+      type: string
+      enum:
+        - NEW
+        - APPROVAL_PENDING
+        - APPROVED
+        - WAITING_THIRDPARTY
+        - COMPLETED
+        - FAILED
+        - REJECTED
+    ApplicationCredential:
+      type: object
+      enum:
+        - $ref: '#/components/schemas/APIKeyCredential'
+        - $ref: '#/components/schemas/OAuthCredential'
+        - $ref: '#/components/schemas/JWTCredential'
+
+    APIKeyCredential:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          description: unique token in GUID format to access the API
+        expiry:
+          type: string
+          format: date
+          description: expiry date of the API Key token
+
+    OAuthCredential:
+      type: object
+      properties:
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        tokenLifeTime:
+          type: integer
+        tokenRefreshLimit:
+          type: integer
+        authorizationUris:
+          type: array
+          items:
+            type: string
+        accessTokenUris:
+          type: array
+          items:
+            type: string
+        redirectUris:
+          type: array
+          items:
+            type: string
+        refreshTokenUris:
+          type: array
+          items:
+            type: string
+
+
+    JWTCredential:
+      type: object
+      properties:
+        claimsets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claimset'
+        accesstoken_uris:
+          type: array
+          items:
+            type: string
+
+    Claimset:
+      type: object
+      properties:
+        name:
+          type: string
+        claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+
+    Claim:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+    UserRequestList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRequest'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+    Application:
+      type: object
+      properties:
+        owner:
+          type: string
+          description: owner user of the application
+        summary:
+          type: string
+          description: short summary of the application
+        access:
+          $ref: '#/components/schemas/AccessControlList'
+        apis:
+          type: array
+          description: APIs that are included in the application.
+          items:
+            type: string
+        credentials:
+          type: array
+          description: |
+            Access credentials for the application's APIs.
+
+            Contains one more credetials of the types APIKey, OAuth2 and JWT.
+          items:
+            $ref: '#/components/schemas/ApplicationCredential'
+        appType:
+          $ref: '#/components/schemas/ApplicationType'
+        name:
+          type: string
+          description: name of the application
+        packageId:
+          type: string
+          description: identifier of the package. Applicable for 'SUBSCRIPTION' type of application.
+        description:
+          type: string
+          description: detailed summary of the application
+        planId:
+          type: string
+          description: identifier of the plan. Applicable for 'SUBSCRIPTION' type of application.
+        id:
+          type: string
+          description: Unique identification for application. Refers to the GUID fo the application.For example `463063e4-724e-45d7-ad58-004de9b0ad26`
+        status:
+          $ref: '#/components/schemas/ApplicationState'
+    UserRequest:
+      type: object
+      properties:
+        owner:
+          type: string
+          description: id of the user who created the request
+        application:
+          type: string
+          description: id of the application
+        context:
+          type: object
+          description: |+
+            Has all details required for application creation.
+            e.g Name and description of the application, API and re-direct url.
+          additionalProperties:
+            type: string
+        id:
+          type: string
+          description: Unique identification for User Request. Refers to the GUID fo the user request. For example `12896841-d85c-4a6c-88c9-632e927dee3d`
+        state:
+          type: object
+          description: indicates the request state of each API/Subscription in the user request.
+          additionalProperties:
+            type: string
+        type:
+          $ref: '#/components/schemas/UserRequestType'
+        status:
+          $ref: '#/components/schemas/UserRequestStatus'
+    AccessToken:
+      type: object
+      properties:
+        token:
+          $ref: '#/components/schemas/TokenResponse'
+        applicationId:
+          type: string
+          description: identifier of the application
+        scope:
+          type: string
+        status:
+          $ref: '#/components/schemas/TokenStatus'
+        type:
+          $ref: '#/components/schemas/TokenType'
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: string
+        refresh_token:
+          type: string
+        scope:
+          type: string
+
+    TokenStatus:
+      type: string
+      enum:
+        - INACTIVE
+        - ACTIVE
+    TokenType:
+      type: string
+      enum:
+        - OAUTH
+        - JWT
+
+  responses:
+    BadRequest:
+      description: "The request was unacceptable, due to invalid payload"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400:
+              $ref: '#/components/examples/400'
+    CreatedResponse:
+      description: "Application is created successfully"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+          examples:
+            201:
+              $ref: '#/components/examples/CreatedResponse'
+    ApplicationUnsharedResponse:
+      description: Application unshared successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicationSharedUnsharedResponse'
+          examples:
+            200:
+              $ref: '#/components/examples/ApplicationUnsharedResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    ApplicationSharedResponse:
+      description: Application shared successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicationSharedUnsharedResponse'
+          examples:
+            200:
+              $ref: '#/components/examples/ApplicationSharedResponse'
+    UserRequestListResponse:
+      description: List of user requests fetched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequestList'
+          examples:
+            200:
+              $ref: '#/components/examples/UserRequestsList'
+    Application:
+      description: ""
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Application'
+          examples:
+            200:
+              $ref: '#/components/examples/Application'
+
+    ApplicationUpdateResponse:
+      description: Application updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Application'
+          examples:
+            200:
+              $ref: '#/components/examples/Application'
+
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+    SearchResponse:
+      description: Retrived applications successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+          examples:
+            200:
+              $ref: '#/components/examples/SearchResponse'
+    AccessTokenListResponse:
+      description: Retrived the specified type of accesstokens from the given application
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccessTokenResponse'
+          examples:
+            OAuthTokens:
+              $ref: '#/components/examples/OAuthTokensResponse'
+    ScopesList:
+      description: List of scope names
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+          examples:
+            ScopeList:
+              $ref: '#/components/examples/ScopesList'
+
+  examples:
+    CreatedResponse:
+      value:
+        id: 463063e4-724e-45d7-ad58-004de9b0ad26
+        _self: /rest/v1/applications/463063e4-724e-45d7-ad58-004de9b0ad26
+    ApplicationUnsharedResponse:
+      value:
+        code: 200
+        message: Application is unshared successfully
+    "400":
+      value:
+        code: 400
+        message: The payload given is invalid
+    "401":
+      value:
+        code: 401
+        message: Invalid credentials
+    "403":
+      value:
+        code: 403
+        message: Insufficient privileges
+    NotificationList:
+      value:
+        count: 1
+        result:
+          - id: f3afe393-655b-4755-8c50-2ecd1c7379da
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            type: APPLICATION_CREATION_REQUEST
+            status: APPROVAL_PENDING
+            context: { }
+            application: fce645f8-fdeb-4b9a-8c33-6a4e75b36fdd
+            state: { }
+    "404":
+      value:
+        code: 404
+        message: Unable to find the Application
+    ApplicationSharedResponse:
+      value:
+        code: 200
+        message: Application is shared successfully
+    Application:
+      value:
+        name: Test Application
+        owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+        id: 463063e4-724e-45d7-ad58-004de9b0ad26
+        providerRef: 63360be0-db5c-4266-9096-011e2f1f0634
+        access:
+          teams: [ ]
+          users: [ ]
+        apis:
+          - 8294372b-5037-4501-b5da-95dad13fcf96
+        credentials:
+          - expiry: null
+            apiKey: 5ff994b2-3259-4799-a0b1-cab2d450c459
+            type: APIKey
+          - clientId: 2321ab15-d561-4422-8e49-0441bd3ba6ef
+            clientSecret: 3a7e2754-fb21-47ae-8f31-651c1f3ebf80
+            scopes: [ ]
+            tokenLifeTime: 3600
+            tokenRefreshLimit: 0
+            authorizationUris:
+              - 'https://localhost:5543/invoke/pub.apigateway.oauth2/authorize'
+            accessTokenUris:
+              - 'https://localhost:5543/invoke/pub.apigateway.oauth2/getAccessToken'
+            redirectUris:
+              - /rest/v1/oauth/callback
+              - 'http://localhost:8080'
+            refreshTokenUris:
+              - 'https://localhost:5543/invoke/pub.oauth/refreshAccessToken'
+            type: OAuth2
+          - claimsets:
+              - name: JWT default claims set
+                claims:
+                  - key: app_id
+                    value: c1cb7679-e171-4991-a306-4632971d4945
+            accesstoken_uris: null
+            type: JWT
+        status: LIVE
+        slots:
+          $stage: lean portal
+        deleted: false
+        description: This application is used for building Hotel app
+        externalRefKey: c1cb7679-e171-4991-a306-4632971d4945
+        app_type: API
+
+    AccessControlList:
+      value:
+        teams:
+          - d0b1d693-daba-44a5-970a-e8ef38798f1c
+        users:
+          - ebfc815e-e2cc-3a16-a251-05bb7b3e1e53
+
+    SearchResponse:
+      value:
+        result:
+          - name: Petstore Application
+            owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+            id: 76a32b75-13e7-4097-afd8-27088fb2e047
+            providerRef: 63360be0-db5c-4266-9096-011e2f1f0634
+            access:
+              teams: [ ]
+              users: [ ]
+            apis:
+              - 8294372b-5037-4501-b5da-95dad13fcf96
+            credentials:
+              - expiry: null
+                apiKey: d9c1ee4c-03c3-4e13-b3aa-ff073939d797
+                type: APIKey
+              - clientId: baf2b181-9fd3-4733-a532-b993e522bc04
+                clientSecret: 9d088033-16a7-494f-b46d-3953b470a7b6
+                scopes: [ ]
+                tokenLifeTime: 3600
+                tokenRefreshLimit: 0
+                authorizationUris:
+                  - 'https://localhost:5543/invoke/pub.apigateway.oauth2/authorize'
+                accessTokenUris:
+                  - 'https://localhost:5543/invoke/pub.apigateway.oauth2/getAccessToken'
+                redirectUris:
+                  - /rest/v1/oauth/callback
+                  - 'http://localhost:8080'
+                refreshTokenUris:
+                  - 'https://localhost:5543/invoke/pub.oauth/refreshAccessToken'
+                type: OAuth2
+              - claimsets:
+                  - name: JWT default claims set
+                    claims:
+                      - key: app_id
+                        value: 0683f0c7-b88c-4ba0-95dd-398931fa6ee4
+                accesstoken_uris: null
+                type: JWT
+            status: LIVE
+            slots:
+              $stage: lean portal
+            deleted: false
+            description: This application is used for building petstore app
+            externalRefKey: 0683f0c7-b88c-4ba0-95dd-398931fa6ee4
+            app_type: API
+          - name: SubscriptionForGoldPlan
+            owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+            id: d0d2ef67-d338-4662-a0cb-d1a69c5fac96
+            providerRef: 63360be0-db5c-4266-9096-011e2f1f0634
+            access:
+              teams: [ ]
+              users: [ ]
+            apis: [ ]
+            credentials: [ ]
+            status: INACTIVE
+            slots:
+              $stage: lean portal
+            deleted: false
+            description: This application is used for building Hotel app
+            app_type: SUBSCRIPTION
+        count: 2
+        _links:
+          _self: /rest/v1/applications?page=0
+
+    UserRequestsList:
+      value:
+        result:
+          - owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+            id: 12896841-d85c-4a6c-88c9-632e927dee3d
+            modified: '2021-03-26 08:54 UTC'
+            created: '2021-03-26 08:54 UTC'
+            type: SUBSCRIPTION_CREATION_REQUEST
+            status: WAITING_THIRDPARTY
+            application: 5097cc01-bd6d-443c-b356-0788af0666b7
+            state:
+              69c8ccc7-4ffa-4612-b097-8a27194bc63c: WAITING_THIRDPARTY
+        count: 1
+    OAuthTokensResponse:
+      value:
+        result:
+          - name: token_for_petstore_app
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: e4ddf133-4175-4827-a09d-ffed5bff5939
+            modified: '2021-03-30 06:30 UTC'
+            created: '2021-03-30 06:30 UTC'
+            token:
+              access_token: b7fdbbfa1b3b4e2d80f1ce4a3e53ee759e2af517412e4d1a86143e629e1ab4c2
+              token_type: Bearer
+              expires_in: '3600'
+              scope: test
+            applicationId: eb6d4a40-33cf-4e42-8c0c-2598f08bb7b3
+            status: ACTIVE
+            type: OAUTH
+        count: 1
+        _links:
+          _self: >-
+            /rest/v1/applications/eb6d4a40-33cf-4e42-8c0c-2598f08bb7b3/tokens?type=OAUTH&page=0
+    ScopesList:
+      value:
+        - scope1
+          scope2

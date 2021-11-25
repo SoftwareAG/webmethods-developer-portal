@@ -1,0 +1,563 @@
+openapi: 3.0.1
+info:
+  title: Portal Webhooks API
+  version: '10.11'
+  description: |
+    ## Overview
+    Portal Webhooks API provides access to the Webhook management functionality. A webhook can be created to listen to one or more events. Two types of webhooks can be created.
+
+    - #### SYSTEM - Default.
+      When webhooks are created they subscribe to one or more events. Whenever the events are generated, this webhook will be invoked with the event metadata
+    - #### PROVIDER
+      This webhook is linked with an API Provider. Whenever a provider event occurs, this webhook will be invoked with the event metadata
+
+    ## Functionalities supported
+      - Create a new webhook.
+      - Get all the webhooks in the system.
+      - Retrieve, Update and Delete webhooks by their unique identifiers.
+      - Get all events in the system to which any webhooks can subscribe to.
+
+    ## Authorization
+      - All operations can be done only by a user having *API Administrator* privilege
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+paths:
+
+  /hooks:
+    get:
+      tags:
+        - WebHook
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+      summary: Retrieve the list of webhooks
+      description: Endpoint to retrieve the list of webhooks. By default, both the system and provider webhooks are returned
+      responses:
+        '200':
+          $ref: '#/components/responses/SearchResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      operationId: get-all-hooks
+    post:
+      tags:
+        - WebHook
+      summary: Create a webhook which are event or provider callbacks
+      description: Create a webhook based on the payload. By default, a system webhook is created. To create a provider webhook, mention the configuration type as PROVIDER
+      operationId: post-hooks
+      requestBody:
+        description: 'Payload to update the webhook configuration'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebHook'
+            examples:
+              BASICAuthenticationForSystem:
+                $ref: '#/components/examples/WebhookConfigurationSystemBASIC'
+              SSLAuthenticationForSystem:
+                $ref: '#/components/examples/WebhookConfigurationSystemSSL'
+              BASICAuthenticationForProvider:
+                $ref: '#/components/examples/WebhookConfigurationProviderBASIC'
+              SSLAuthenticationForProvider:
+                $ref: '#/components/examples/WebhookConfigurationProviderSSL'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/hooks/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: Unique identifier of a webhook
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - WebHook
+      summary: Retrieve a particular webhook
+      description: Retrieve the webhook configuration information based on the id
+      responses:
+        '200':
+          $ref: '#/components/responses/WebHook'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      operationId: get-hooks-id
+    put:
+      tags:
+        - WebHook
+      summary: Update a particular webhook
+      description: Update a webhook based on the id and input payload
+      operationId: put-hooks-id
+      requestBody:
+        description: 'Payload to update the webhook configuration'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebHook'
+            examples:
+              BASICAuthenticationForSystem:
+                $ref: '#/components/examples/WebhookConfigurationSystemBASIC'
+              SSLAuthenticationForSystem:
+                $ref: '#/components/examples/WebhookConfigurationSystemSSL'
+              BASICAuthenticationForProvider:
+                $ref: '#/components/examples/WebhookConfigurationProviderBASIC'
+              SSLAuthenticationForProvider:
+                $ref: '#/components/examples/WebhookConfigurationProviderSSL'
+      responses:
+        '200':
+          $ref: '#/components/responses/WebHook'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - WebHook
+      summary: Delete a particular webhook
+      description: Delete a webhook configuration based on the id
+      operationId: delete-hooks-id
+      responses:
+        '204':
+          description: Successfully deleted the webhook configuration based on the id
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/hooks/events':
+    get:
+      tags:
+        - WebHook
+      summary: Retrieve the list of events for which a webhook can subscribe to
+      description: Retrieve the list of events for which a webhook can subscribe to
+      responses:
+        '200':
+          $ref: '#/components/responses/WebHookEventResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  schemas:
+    EventTypeList:
+      type: array
+      description: List of events
+      items:
+        $ref: '#/components/schemas/EventType'
+    EventType:
+      description: Type of the event
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for event. Refers to the GUID of the event.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+          enum:
+            - API_PUBLISH_EVENT
+            - API_REPUBLISH_EVENT
+            - API_UN_PUBLISH_EVENT
+            - PROVIDER_PUBLISH_EVENT
+            - PROVIDER_REPUBLISH_EVENT
+            - PROVIDER_UNPUBLISH_EVENT
+            - SIGN_UP_EVENT
+            - APPLICATION_REQUEST_EVENT
+            - APPLICATION_CREATION_REQUEST_EVENT
+            - APPLICATION_REQUEST_APPROVED_EVENT
+            - APPLICATION_REQUEST_REJECTED_EVENT
+            - COMMUNITY_CREATION_EVENT
+            - COMMUNITY_DELETION_EVENT
+            - COMMUNITY_MEMBERSHIP_CHANGE_EVENT
+            - COMMUNITY_SCOPE_CHANGE_EVENT
+            - IN_APP_NOTIFICATION_EVENT
+            - EMAIL_NOTIFICATION_EVENT
+        name:
+          type: string
+          description: Event name
+        description:
+          type: string
+          description: Event description
+    SearchResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: Result list
+          items:
+            $ref: '#/components/schemas/WebHook'
+        count:
+          type: integer
+          description: Total number of webhooks retrieved
+        _links:
+          type: object
+          description: Links of current and next page
+          required:
+            - _self
+          properties:
+            _self:
+              description: Link of current page
+              type: string
+            _next:
+              description: Link of next page
+              type: string
+    CreationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for webhook. Refers to the GUID of the webhook.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+          format: uuid
+        _self:
+          type: string
+          description: Self reference of the newly created webhook
+    WebHook:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for webhook. Refers to the GUID of the webhook.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        url:
+          type: string
+          description: Webhook URL to post
+        subscriptions:
+          type: array
+          description: List of events that we want to subscribe to
+          items:
+            $ref: '#/components/schemas/EventType'
+        configuration_type:
+          type: string
+          description: Indicates whether the webhook is related to system or stage
+          enum:
+            - "SYSTEM"
+            - "PROVIDER"
+          default: SYSTEM
+        parameters:
+          type: object
+          description: Parameters of the webhook
+          oneOf:
+            - $ref: '#/components/schemas/BasicAuthParameter'
+            - $ref: '#/components/schemas/SslAuthParameter'
+            - $ref: '#/components/schemas/NoAuthParameter'
+    WebHookParameter:
+      type: object
+      required:
+        - authentication
+      properties:
+        authentication:
+          type: string
+      discriminator:
+        propertyName: authentication
+    BasicAuthParameter:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/WebHookParameter'
+      properties:
+        username:
+          type: string
+          description: User name to authenticate
+        password:
+          type: string
+          description: Password of the user
+    SslAuthParameter:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/WebHookParameter'
+      properties:
+        type:
+          type: string
+          description: Type of certificate used to authenticate with the webhook
+        password:
+          type: string
+          description: Password of the certificate
+        file_id:
+          type: string
+          description: The certificate should be uploaded into API Portal using the File API. This id refer to the certificate file id in the system
+    NoAuthParameter:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/WebHookParameter'
+    APIPortalErrorResponse:
+      type: object
+      properties:
+        code:
+          description: API Portal error code
+          type: integer
+        message:
+          description: Reason for the error
+          type: string
+        errors:
+          description: Validation error messages if any
+          type: object
+
+  responses:
+    CreationResponse:
+      description: Response when a webhook is successfully created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreationResponse'
+          examples:
+            CreationResponse:
+              $ref: '#/components/examples/CreationResponse'
+    WebHook:
+      description: Response when a webhook is successfully retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebHook'
+          examples:
+            WebhookSystemConfigurationForBASICAuth:
+              $ref: '#/components/examples/WebhookConfigurationSystemBASICResponse'
+            WebhookSystemConfigurationForSSLAuth:
+              $ref: '#/components/examples/WebhookConfigurationSystemSSLResponse'
+            WebhookProviderConfigurationForBASICAuth:
+              $ref: '#/components/examples/WebhookConfigurationProviderBASICResponse'
+            WebhookProviderConfigurationForSSLAuth:
+              $ref: '#/components/examples/WebhookConfigurationProviderSSLResponse'
+    WebHookEventResponse:
+      description: List of events for which the webhooks can subscribe
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EventTypeList'
+          examples:
+            Events:
+              $ref: '#/components/examples/EventTypeList'
+    NotFound:
+      description: Unable to find the requested resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIPortalErrorResponse'
+          examples:
+            NotFoundResponse:
+              $ref: '#/components/examples/404'
+    SearchResponse:
+      description: Successfully retrieved the webhook configurations
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+          examples:
+            SearchResponse:
+              $ref: '#/components/examples/SearchResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIPortalErrorResponse'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: User does not have sufficient privileges to perform this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIPortalErrorResponse'
+          examples:
+            ForbiddenResponse:
+              $ref: '#/components/examples/403'
+    BadRequest:
+      description: Wrong payload given by the user to configure the webhook
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIPortalErrorResponse'
+          examples:
+            BadRequestResponse:
+              $ref: '#/components/examples/400'
+            BasicAuthBadRequestResponse:
+              $ref: '#/components/examples/BasicAuth_400'
+            SslAuthBadRequestResponse:
+              $ref: '#/components/examples/SslAuth_400'
+
+  securitySchemes:
+    accesstoken:
+      name: accesstoken
+      type: apiKey
+      in: cookie
+
+  examples:
+    WebhookConfigurationSystemBASICResponse:
+      value:
+        id: 'bc5f92a1-ea14-4cbe-9f7d-793369eb8832'
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: BASIC
+          username: system
+          password: sss
+        subscriptions:
+          - id: API_PUBLISH_EVENT
+            name: API publish event
+            description: This event is invoked when an API is published
+        configuration_type: SYSTEM
+    WebhookConfigurationSystemSSLResponse:
+      value:
+        id: '102dcde2-a356-4af1-903a-e506cee2bdcf'
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: SSL
+          type: jks
+          file_id: '1234'
+          password: sss
+        subscriptions:
+          - id: API_PUBLISH_EVENT
+            name: API publish event
+            description: This event is invoked when an API is published
+        configuration_type: SYSTEM
+    WebhookConfigurationProviderBASICResponse:
+      value:
+        id: 'bc5f92a1-ea14-4cbe-9f7d-793369eb8832'
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: BASIC
+          username: system
+          password: sss
+        configuration_type: PROVIDER
+    WebhookConfigurationProviderSSLResponse:
+      value:
+        id: 'cdd51446-a541-40ae-a721-dfe4345f0345'
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: SSL
+          type: jks
+          file_id: '1234'
+          password: sss
+        configuration_type: PROVIDER
+    WebhookConfigurationSystemSSL:
+      value:
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: SSL
+          type: jks
+          file_id: '1234'
+          password: sss
+        subscriptions:
+          - id: API_PUBLISH_EVENT
+    WebhookConfigurationSystemBASIC:
+      value:
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: BASIC
+          username: system
+          password: sss
+        subscriptions:
+          - id: API_PUBLISH_EVENT
+    WebhookConfigurationProviderBASIC:
+      value:
+        url: 'http://localhost:8086/events'
+        parameters:
+          authentication: BASIC
+          username: system
+          password: sss
+        configuration_type: PROVIDER
+    WebhookConfigurationProviderSSL:
+      value:
+        url: 'http://localhost:8086/events'
+        configuration_type: PROVIDER
+        parameters:
+          authentication: SSL
+          type: jks
+          file_id: '1234'
+          password: sss
+    401:
+      value:
+        code: 401
+        message: Invalid credentials
+    403:
+      value:
+        code: 403
+        message: Insufficient privileges
+    400:
+      value:
+        code: 400
+        message: User provided data is not correct
+        errors:
+          - Url is missing
+    BasicAuth_400:
+      value:
+        code: 400
+        message: User provided data is not correct
+        errors:
+          - Password is missing
+          - Username is missing
+    SslAuth_400:
+      value:
+        code: 400
+        message: User provided data is not correct
+        errors:
+          - Certificate type is missing
+          - Certificate is missing
+          - Password is missing
+    404:
+      value:
+        code: 404
+        message: Unable to find the Webhook with id [550c52c8-7812-4f69-ac1d-7951351b5c88]
+    SearchResponse:
+      value:
+        result:
+          - $ref: '#/components/examples/WebhookConfigurationResponse/value'
+        count: 11
+        _links:
+          _self: rest/v1/webhooks?page=0
+          _next: rest/v1/webhooks?page=1
+    CreationResponse:
+      value:
+        result:
+          id: d603020e-1db4-4e54-a728-be77e633c566
+          _self: /rest/v1/hooks/d603020e-1db4-4e54-a728-be77e633c566
+    WebhookConfigurationResponse:
+      value:
+        id: 83ed37fb-f833-406b-b46a-4b8084730df7
+        url: 'http://localhost:8086/events'
+        parameters:
+          $ref: '#/components/examples/BasicParameters/value'
+        subscriptions:
+          - API_PUBLISH_EVENT
+        configuration_type: SYSTEM
+    BasicParameters:
+      value:
+        authentication: BASIC
+        username: system
+        password: CYIQA7AbMHCu9u//OrniWw==
+    EventTypeList:
+      value:
+        - id: TEAM_DELETION_EVENT
+          name: Team deletion event
+          description: This event will be invoked when the team is deleted
+        - id: COMMUNITY_CREATION_EVENT
+          name: Community creation event
+          description: This event will be invoked when a new community is created
