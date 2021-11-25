@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: devportal
+  labels:
+    app: devportal
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  revisionHistoryLimit: 10
+  serviceName: devportal-svc
+  selector:
+    matchLabels:
+      app: devportal
+  template:
+    metadata:
+      labels:
+        app: devportal
+      name: devportal
+    spec:
+      containers:
+        - name: devportal
+          image: store/softwareag/devportal:10.11.0.1
+          resources:
+            limits:
+              cpu: "4"
+              memory: "4096Mi"
+            requests:
+              cpu: "1"
+              memory: "1024Mi"
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_ELASTICSEARCH_REST_URIS
+              value: http://devportal-es-svc:9200
+      imagePullSecrets:
+        - name: regcred

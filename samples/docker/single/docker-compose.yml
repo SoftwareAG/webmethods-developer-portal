@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+
+  devportal-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: devportal-es
+    hostname: devportal-es
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - devportal-nw
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  devportal:
+    image: store/softwareag/devportal:10.11.0.1
+    container_name: devportal
+    hostname: devportal
+    environment:
+      - SPRING_ELASTICSEARCH_REST_URIS=http://devportal-es:9200
+    depends_on:
+      - devportal-es
+    networks:
+      - devportal-nw
+    ports:
+      - 80:8083
+      - 443:8084
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+volumes:
+  elasticsearch-data:
+    driver: local
+
+networks:
+  devportal-nw:

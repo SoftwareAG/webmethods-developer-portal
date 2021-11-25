@@ -1,0 +1,125 @@
+version: '3.7'
+
+services:
+  devportal-es-0:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: devportal-es-0
+    hostname: devportal-es-0
+    environment:
+      - node.name=devportal-es-0
+      - cluster.name=devportal-es-cluster
+      - discovery.seed_hosts=devportal-es-1,devportal-es-2
+      - cluster.initial_master_nodes=devportal-es-0,devportal-es-1,devportal-es-2
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    networks:
+      - devportal-nw
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  devportal-es-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: devportal-es-1
+    environment:
+      - node.name=devportal-es-1
+      - cluster.name=devportal-es-cluster
+      - discovery.seed_hosts=devportal-es-0,devportal-es-2
+      - cluster.initial_master_nodes=devportal-es-0,devportal-es-1,devportal-es-2
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    networks:
+      - devportal-nw
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  devportal-es-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: devportal-es-2
+    environment:
+      - node.name=devportal-es-2
+      - cluster.name=devportal-es-cluster
+      - discovery.seed_hosts=devportal-es-1,devportal-es-0
+      - cluster.initial_master_nodes=devportal-es-0,devportal-es-1,devportal-es-2
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    networks:
+      - devportal-nw
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  devportal_0:
+    image: store/softwareag/devportal:10.11.0.1
+    container_name: devportal_0
+    hostname: devportal_0
+    environment:
+      - SPRING_ELASTICSEARCH_REST_URIS=http://devportal-es-0:9200
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_ENABLED=true
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_0=devportal_0:47500..47509
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_1=devportal_1:47500..47509
+    depends_on:
+      - devportal-es-0
+      - devportal-es-1
+      - devportal-es-2
+    networks:
+      - devportal-nw
+    ports:
+      - 8083:8083
+      - 8084:8084
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  devportal_1:
+    image: store/softwareag/devportal:10.11.0.1
+    container_name: devportal_1
+    hostname: devportal_1
+    environment:
+      - SPRING_ELASTICSEARCH_REST_URIS=http://devportal-es-0:9200
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_ENABLED=true
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_0=devportal_0:47500..47509
+      - PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_1=devportal_1:47500..47509
+    depends_on:
+      - devportal-es-0
+      - devportal-es-1
+      - devportal-es-2
+    networks:
+      - devportal-nw
+    ports:
+      - 8085:8083
+      - 8086:8084
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+networks:
+  devportal-nw:
+    driver: bridge
