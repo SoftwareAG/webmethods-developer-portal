@@ -11,8 +11,8 @@
 | 9 | random2 | ![Home](random2/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/random2/theme.zip) |
 | 10 | utube | ![Home](utube/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/utube/theme.zip) |
 | 11 | gov.ae | ![Home](gov.ae/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/gov.ae/theme.zip) |
-| 12 | getinbank | ![Home](getinbank/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinbank/theme.zip) |
-| 13 | dhl | ![Home](dhl/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/dhl/theme.zip) |
+| 12 | getinbank | ![Home](getinbank/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinbank/theme.zip) |
+| 13 | dhl | ![Home](dhl/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/dhl/theme.zip) |
 
 
 
