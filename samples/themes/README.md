@@ -13,6 +13,8 @@
 | 11 | gov.ae | ![Home](gov.ae/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/gov.ae/theme.zip) |
 | 12 | getinbank | ![Home](getinbank/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinbank/theme.zip) |
 | 13 | dhl | ![Home](dhl/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/dhl/theme.zip) |
+| 14 | techdata | ![Home](techdata/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/techdata/theme.zip) |
+| 15 | jdirving | ![Home](jdirving/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/jdirving/theme.zip) |
 
 
 
