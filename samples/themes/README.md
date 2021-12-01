@@ -6,5 +6,6 @@
 | 4 | insurance | ![Home](insurance/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/insurance/theme.zip) |
 | 5 | idbi-bank | ![Home](idbi-bank/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/idbi-bank/theme.zip) |
 | 6 | nlb | ![Home](nlb/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/nlb/theme.zip) |
+| 7 | axa-indonesia | ![Home](nlb/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/axa-indonesia/theme.zip) |
 
 
