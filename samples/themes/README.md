@@ -1,4 +1,5 @@
 | # | Name | Image      | Link |
 |---| ---- | ---------  | ---- |
-| 1 | sagapis | ![Home](sagapis/home.png) | [Download](sagapis/theme.zip) |
-| 2 | dark | ![Home](dark/home.png) | [Download](dark/theme.zip) |
+| 1 | sagapis | ![Home](sagapis/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/sagapis/theme.zip) |
+| 2 | dark | ![Home](dark/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/dark/theme.zip) |
+| 2 | uae marketplace | ![Home](uae-marketplace/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/uae-marketplace/theme.zip) |
