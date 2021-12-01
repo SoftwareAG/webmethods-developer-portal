@@ -17,6 +17,8 @@
 | 15 | jdirving | ![Home](jdirving/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/jdirving/theme.zip) |
 | 16 | random3 | ![Home](random3/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/random3/theme.zip) |
 | 17 | stg.dubai | ![Home](stg.dubai/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/stg.dubai/theme.zip) |
+| 18 | lufthansa | ![Home](lufthansa/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/lufthansa/theme.zip) |
+| 19 | ericsson | ![Home](ericsson/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/ericsson/theme.zip) |
 
 
 
