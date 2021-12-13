@@ -1,0 +1,133 @@
+productName: devportal
+deploymentType: cluster
+image:
+  registry: "hub.docker.com"
+applications:
+  portalbundle:
+    image:
+      registry: "store/softwareag"
+      imageName: "devportal"
+      imageTag: "10.11.0.1"
+    paid:
+      single:
+        replica: 1
+      cluster:
+        replica: 2
+    resources:
+      limits:
+        cpu: "4"
+        memory: "4096Mi"
+      requests:
+        cpu: "1"
+        memory: "1024Mi"
+    ports:
+    - containerPort: 8083
+  loadbalancer:
+    service:
+      name: devportal-lb
+      annotations: {}
+      ports:
+      - name: http
+        port: 80
+        targetPort: 8083
+        protocol: TCP
+      - name: https
+        port: 443
+        targetPort: 8084
+        protocol: TCP
+  elasticsearch:
+    image:
+      registry: "docker.elastic.co/elasticsearch"
+      imageName: "elasticsearch"
+      imageTag: "7.7.1"
+      pullPolicy: IfNotPresent
+    esHttpPort: 9200
+    ports:
+    - name: http
+      containerPort: 9200
+      protocol: TCP
+    - name: transport
+      containerPort: 9300
+      protocol: TCP
+    discoveryType: single-node
+    networkHost: 0.0.0.0
+    heapConfig: "-Xmx1g -Xms1g"
+    paid:
+      single:
+        replica: 1
+      cluster:
+        replica: 3
+    service:
+      type: ClusterIP
+      name: devportal-es
+      annotations: {}
+      ports:
+      - name: http
+        port: 9200
+        targetPort: 9200
+        protocol: TCP
+      - name: transport
+        port: 9300
+        targetPort: 9300
+        protocol: TCP
+    readiness:
+      failureThreshold: 3
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 3
+      timeoutSeconds: 5
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+      requests:
+        cpu: 100m
+        memory: 2Gi
+    volumeClaims:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi
+      volumeMode: Filesystem
+ignitePorts:
+  - name: ignite-port-one
+    protocol: TCP
+    port: 47500
+    targetPort: 47500
+  - name: ignite-port-two
+    protocol: TCP
+    port: 47501
+    targetPort: 47501
+  - name: ignite-port-three
+    protocol: TCP
+    port: 47502
+    targetPort: 47502
+  - name: ignite-port-four
+    protocol: TCP
+    port: 47503
+    targetPort: 47503
+  - name: ignite-port-five
+    protocol: TCP
+    port: 47504
+    targetPort: 47504
+  - name: ignite-port-six
+    protocol: TCP
+    port: 47505
+    targetPort: 47505
+  - name: ignite-port-seven
+    protocol: TCP
+    port: 47506
+    targetPort: 47506
+  - name: ignite-port-eight
+    protocol: TCP
+    port: 47507
+    targetPort: 47507
+  - name: ignite-port-nine
+    protocol: TCP
+    port: 47508
+    targetPort: 47508
+  - name: ignite-port-ten
+    protocol: TCP
+    port: 47509
+    targetPort: 47509

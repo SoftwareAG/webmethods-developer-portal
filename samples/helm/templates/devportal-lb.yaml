@@ -1,0 +1,13 @@
+{{- $app:= "loadbalancer" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ index $.Values "applications" $app "service" "name" }}
+  labels:
+    run: {{ index $.Values "applications" $app "service" "name" }}
+spec:
+  type: LoadBalancer
+  ports:
+{{ toYaml (index $.Values "applications" $app "service" "ports") | indent 4 }}
+  selector:
+    app: {{ $.Values.productName }}

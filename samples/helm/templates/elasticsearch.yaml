@@ -1,0 +1,105 @@
+{{- $app:= "elasticsearch" -}}
+{{- $esServiceName:= include "elasticsearch.getServiceName" (dict "root" $) }}
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: {{ index $.Values "applications" $app "service" "name" }}
+  name: {{ index $.Values "applications" $app "service" "name" }}
+spec:
+  podManagementPolicy: Parallel
+  replicas: {{ include "devportal.appSpecific.getdeploymentTypeConfigAsYaml" (dict "application" $app "config" "replica" "root" $) }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ index $.Values "applications" $app "service" "name" }}
+  serviceName: {{ $esServiceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ index $.Values "applications" $app "service" "name" }}
+      name: {{ index $.Values "applications" $app "service" "name" }}
+    spec:
+{{- if eq $.Values.deploymentType "cluster" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ index $.Values "applications" $app "service" "name" }}
+                topologyKey: kubernetes.io/hostname
+{{- end }}
+      containers:
+        - env:
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+{{- if eq $.Values.deploymentType "cluster" }}
+            - name: cluster.initial_master_nodes
+              value: {{ index $.Values "applications" $app "service" "name" }}-0,{{ index $.Values "applications" $app "service" "name" }}-1,{{ index $.Values "applications" $app "service" "name" }}-2
+            - name: discovery.seed_hosts
+              value: {{ $esServiceName }}
+            - name: cluster.name
+              value: {{ index $.Values "applications" $app "service" "name" }}-cluster
+            - name: network.host
+              value: {{ index $.Values "applications" $app "networkHost" }}
+            - name: ES_JAVA_OPTS
+              value: {{ index $.Values "applications" $app "heapConfig" }}
+            - name: node.data
+              value: "true"
+            - name: node.ingest
+              value: "true"
+            - name: node.master
+              value: "true"
+{{- end }}
+{{- if eq $.Values.deploymentType "single" }}
+            - name: cluster.name
+              value: {{ index $.Values "applications" $app "service" "name" }}-cluster
+            - name: discovery.type
+              value: {{ index $.Values "applications" $app "discoveryType" }}
+            - name: network.host
+              value: {{ index $.Values "applications" $app "networkHost" }}
+            - name: ES_JAVA_OPTS
+              value: {{ index $.Values "applications" $app "heapConfig" }}
+{{- end }}
+          image: {{ index $.Values "applications" $app "image" "registry" }}/{{ index $.Values "applications" $app "image" "imageName" }}:{{ index $.Values "applications" $app "image" "imageTag" }}
+          imagePullPolicy: {{ index $.Values "applications" $app "image" "pullPolicy" }}
+          name: elasticsearch
+          ports:
+{{ toYaml (index $.Values "applications" $app "ports") | indent 12 }}
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+{{ tpl ($.Files.Get (printf "files/elastic-readiness.sh") ) $ | indent 18 }}
+{{ toYaml (index $.Values "applications" $app "readiness") | indent 12 }}
+          resources:
+{{ toYaml (index $.Values "applications" $app "resources") | indent 12 }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: vol
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: vol
+      spec:
+{{ toYaml (index $.Values "applications" $app "volumeClaims") | indent 8 }}

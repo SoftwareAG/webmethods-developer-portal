@@ -1,0 +1,58 @@
+{{- $app:= "portalbundle" -}}
+{{- $es_app:= "elasticsearch" -}}
+apiVersion: apps/v1
+{{- if eq $.Values.deploymentType "cluster" }}
+kind: StatefulSet
+{{- else }}
+kind: Deployment
+{{- end }}
+metadata:
+  name: {{ $.Values.productName }}
+  labels:
+    app: {{ $.Values.productName }}
+spec:
+  podManagementPolicy: Parallel
+  replicas: {{ include "devportal.appSpecific.getdeploymentTypeConfigAsYaml" (dict "application" $app "config" "replica" "root" $) }}
+  revisionHistoryLimit: 10
+  serviceName: {{ $.Values.productName }}-svc
+  selector:
+    matchLabels:
+      app: {{ $.Values.productName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Values.productName }}
+      name: {{ $.Values.productName }}
+    spec:
+{{- if eq $.Values.deploymentType "cluster" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ $.Values.productName }}
+                topologyKey: kubernetes.io/hostname
+{{- end }}
+      containers:
+        - name: {{ $.Values.productName }}
+          image: {{ index $.Values "applications" $app "image" "registry" }}/{{ index $.Values "applications" $app "image" "imageName" }}:{{ index $.Values "applications" $app "image" "imageTag" }}
+          resources:
+{{ toYaml (index $.Values "applications" $app "resources") | indent 12 }}
+          ports:
+{{ toYaml (index $.Values "applications" $app "ports") | indent 12 }}
+          env:
+            - name: SPRING_ELASTICSEARCH_REST_URIS
+              value: http://{{ index $.Values "applications" $es_app "service" "name" }}-svc:{{ index $.Values "applications" $es_app "esHttpPort" }}
+{{- if eq $.Values.deploymentType "cluster" }}
+            - name: PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_0
+              value: {{ $.Values.productName }}-svc:47500..47509
+            - name: PORTAL_SERVER_CACHE_DISTRIBUTED_ENABLED
+              value: "true"
+{{- end }}
+      imagePullSecrets:
+        - name: regcred

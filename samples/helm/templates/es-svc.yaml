@@ -1,0 +1,17 @@
+{{- $app:= "elasticsearch" -}}
+
+{{- $esServiceName:= include "elasticsearch.getServiceName" (dict "root" $) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $esServiceName }}
+  labels:
+    app: {{ index $.Values "applications" $app "service" "name" }}
+spec:
+  ports:
+{{ toYaml (index $.Values "applications" $app "service" "ports") | indent 4 }}
+  publishNotReadyAddresses: true
+  selector:
+    app: {{ index $.Values "applications" $app "service" "name" }}
+  sessionAffinity: None
+  type: {{ index $.Values "applications" $app "service" "type" }}

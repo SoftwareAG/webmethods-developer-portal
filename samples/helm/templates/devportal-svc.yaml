@@ -1,0 +1,15 @@
+{{- $deploymentType:= lower .Values.deploymentType -}}
+{{- if eq $deploymentType "cluster" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Values.productName }}-svc
+spec:
+  clusterIP: None
+  ports:
+{{ toYaml $.Values.ignitePorts | indent 4 }}
+  selector:
+    app: {{ $.Values.productName }}
+  sessionAffinity: None
+  type: ClusterIP
+{{- end }}
