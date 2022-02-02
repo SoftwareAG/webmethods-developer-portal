@@ -28,6 +28,7 @@
 | 26 | random6 | ![Home](random6/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/random6/theme.zip) |
 | 27 | flydubai | ![Home](flydubai/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/flydubai/theme.zip) |
 | 28 | bonfiglioli | ![Home](bonfiglioli/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/bonfiglioli/theme.zip) |
+| 29 | carnival | ![Home](carnival/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carnival/theme.zip) |
 
 
 
