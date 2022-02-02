@@ -11,10 +11,12 @@ metadata:
   labels:
     app: {{ $.Values.productName }}
 spec:
+{{- if eq $.Values.deploymentType "cluster" }}
   podManagementPolicy: Parallel
+  serviceName: {{ $.Values.productName }}-svc
+{{- end }}
   replicas: {{ include "devportal.appSpecific.getdeploymentTypeConfigAsYaml" (dict "application" $app "config" "replica" "root" $) }}
   revisionHistoryLimit: 10
-  serviceName: {{ $.Values.productName }}-svc
   selector:
     matchLabels:
       app: {{ $.Values.productName }}
