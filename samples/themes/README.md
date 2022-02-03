@@ -31,6 +31,10 @@
 | 29 | carnival | ![Home](carnival/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carnival/theme.zip) |
 | 30 | watercorp | ![Home](watercorp/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/watercorp/theme.zip) |
 | 31 | carrotins | ![Home](carrotins/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carrotins/theme.zip) |
+| 32 | watercorp | ![Home](reykjavik/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/reykjavik/theme.zip) |
+| 33 | kuehnenagel | ![Home](kuehnenagel/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/kuehnenagel/theme.zip) |
+
+
 
 
 
