@@ -35,6 +35,7 @@
 | 33 | kuehnenagel | ![Home](kuehnenagel/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/kuehnenagel/theme.zip) |
 | 34 | getinge | ![Home](getinge/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinge/theme.zip) |
 | 35 | griesser | ![Home](griesser/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/griesser/theme.zip) |
+| 36 | travelbays | ![Home](travelbays/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/travelbays/theme.zip) |
 
 
 
