@@ -33,6 +33,8 @@
 | 31 | carrotins | ![Home](carrotins/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carrotins/theme.zip) |
 | 32 | watercorp | ![Home](reykjavik/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/reykjavik/theme.zip) |
 | 33 | kuehnenagel | ![Home](kuehnenagel/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/kuehnenagel/theme.zip) |
+| 34 | getinge | ![Home](getinge/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinge/theme.zip) |
+| 35 | griesser | ![Home](griesser/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/griesser/theme.zip) |
 
 
 
