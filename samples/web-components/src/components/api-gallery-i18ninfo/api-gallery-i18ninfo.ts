@@ -1,13 +1,13 @@
 import { AbstractPortalElement } from "../../abstract.portal.element";
 import { ContextModel } from "../../model/context.model";
-import { AllData } from "../../model/data/alldata.model";
+import { AllData, LEExcludingBox, LocalStrings } from "../../model/data/alldata.model";
 import { ApiModel } from "../../model/data/api.model";
 import { List } from "../../model/list";
 import { RequestDataService } from "../../service/request.service";
 
 export class ApiGalleryI18ninfo extends AbstractPortalElement {
 
-    locales: any[] = [];
+    locales: any = {};
 
     constructor() {
         super();
@@ -22,7 +22,8 @@ export class ApiGalleryI18ninfo extends AbstractPortalElement {
         const service = new RequestDataService();
         if (this.getData().id && this.checkIfValidUUID(this.getData().id)) {
             const thisData: AllData = await service.getAsJSON('/portal/rest/v1/apis/' + this.getData().id + '/i18n');
-            console.log("### current context is\n", this, this.parentElement.parentElement.parentElement.parentElement);
+            // console.log("### current context is\n", this, this.parentElement.parentElement.parentElement.parentElement);
+            let parentElem = this.parentElement;
             // throw new Error("Method not implemented.");
             const apiLocales: string[] = [];
             if (thisData.summary && thisData.summary.localStrings) {
@@ -35,11 +36,22 @@ export class ApiGalleryI18ninfo extends AbstractPortalElement {
             rootHtml.className = "i18n-wrapper";
             apiLocales.forEach(l => {
                 const localeItem = document.createElement('span');
+                localeItem.addEventListener('click', (evt) =>{
+                    evt.preventDefault();
+                    this.switchLocale(evt, l, parentElem);
+                });
                 // localeItem.innerText = l;
                 const country = l.substring(l.indexOf("_") + 1);
-                console.log("found country: ", country);
                 localeItem.className = "fi fi-" + country.toLowerCase();
                 rootHtml.appendChild(localeItem);
+
+                // store name, summary and description for later usage 
+                this.locales[l] = {
+                    "name": thisData.name.localStrings[l as LEExcludingBox],
+                    "summary":thisData.summary.localStrings[l as LEExcludingBox],
+                    "description": thisData.description.localStrings[l as LEExcludingBox]
+                };
+                
             });
             this.shadowRoot.innerHTML = `
                 <style>
@@ -84,6 +96,15 @@ export class ApiGalleryI18ninfo extends AbstractPortalElement {
                 ;
 
             this.shadowRoot.appendChild(rootHtml);
+            // let iconSelector = this.shadowRoot.querySelector('div.i18n-wrapper span');
+            // // console.log("query selector\n", );
+            // if (iconSelector != null) {
+            //     iconSelector.addEventListener('click', (event) => {
+            //         event.preventDefault();
+            //         this.switchLocale(event);
+            //     });
+                
+            // }
         } else {
             console.log("+-+ api-gallery-i18n: no api id found to check for locales... only an empty box will be rendered");
             let rootHtml = document.createElement("div");
@@ -101,10 +122,24 @@ export class ApiGalleryI18ninfo extends AbstractPortalElement {
         }
     }
 
+    switchLocale(evt:Event, l:any, parentElem:any) {
+        // console.log("* switching locale to \n", [l, "\n-", this.parentElement, evt.target, this.querySelector('span.fi')]);
+        // the parent element should be a 'yap-web-component'
+        // its parent element should be a 'yap-div' element, which contains the API icon, title and description
+        // we will check if these elements are there and switch the locale if it's different from the current one
+        let apiTitleElem = parentElem.parentElement.querySelector('yap-link a');
+        if (apiTitleElem != null) {
+            apiTitleElem.innerText = this.locales[l].name;
+        }
+        let apiSummaryElem = parentElem.parentElement.querySelector('yap-paragraph p');
+        if (apiSummaryElem != null) {
+            apiSummaryElem.innerText = this.locales[l].summary;
+        }
+    }
+
     private getTemplate() {
         return `
         <div class="wrapper">
-            
         </div>
     `;
     }

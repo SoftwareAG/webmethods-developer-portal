@@ -48,26 +48,18 @@ export class AllData {
   }
   
   export interface LocalStrings {
-    en_US: string
-    de_DE: string
+    en_US : string;
+    de_DE : string;
   }
+  export type LEExcludingBox = Exclude<keyof LocalStrings, 'ab_ab'>;
   
   export interface Summary {
-    localStrings: LocalStrings2
+    localStrings: LocalStrings
   }
   
-  export interface LocalStrings2 {
-    en_US: string
-    de_DE: string
-  }
   
   export interface Description {
-    localStrings: LocalStrings3
-  }
-  
-  export interface LocalStrings3 {
-    en_US: string
-    de_DE: string
+    localStrings: LocalStrings
   }
   
   export interface Icon {
@@ -76,80 +68,32 @@ export class AllData {
   }
   
   export interface Category {
-    name: Name2
+    name: Name
     summary: any
     description: any
     cname: string
   }
   
-  export interface Name2 {
-    localStrings: LocalStrings4
-  }
-  
-  export interface LocalStrings4 {
-    en_US: string
-  }
-  
   export interface Attachment {
-    name: Name3
+    name: Name
     summary: any
     description: any
     uri: string
   }
   
-  export interface Name3 {
-    localStrings: LocalStrings5
-  }
-  
-  export interface LocalStrings5 {
-    en_US: string
-  }
-  
   export interface MaturityStatu {
-    name: Name4
+    name: Name
     summary: any
     description: any
     cname: string
   }
   
-  export interface Name4 {
-    localStrings: LocalStrings6
-  }
-  
-  export interface LocalStrings6 {
-    en_US: string
-  }
-  
   export interface Policy {
-    name: Name5
-    summary: Summary2
-    description: Description2
+    name: Name
+    summary: Summary
+    description: Description
     categories: any[]
     providerRef: any
-  }
-  
-  export interface Name5 {
-    localStrings: LocalStrings7
-  }
-  
-  export interface LocalStrings7 {
-    en_US: string
-  }
-  
-  export interface Summary2 {
-    localStrings: LocalStrings8
-  }
-  
-  export interface LocalStrings8 {
-    en_US: string
-  }
-  
-  export interface Description2 {
-    localStrings: LocalStrings9
-  }
-  
-  export interface LocalStrings9 {
-    en_US: string
   }
   
   export interface SecurityScheme {
@@ -164,3 +108,7 @@ export class AllData {
     openIdConnectUrl: any
   }
   
+  export class AllLocales {
+    "de_DE": string;
+    "en_US": string;
+  }
