@@ -36,7 +36,7 @@
 | 34 | getinge | ![Home](getinge/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinge/theme.zip) |
 | 35 | griesser | ![Home](griesser/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/griesser/theme.zip) |
 | 36 | travelbays | ![Home](travelbays/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/travelbays/theme.zip) |
-| 37 | bni | ![Home](bni/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/bni/theme.zip) |
+| 37 | bni | ![Home](bni/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/bni/theme.zip) |
 
 
 
