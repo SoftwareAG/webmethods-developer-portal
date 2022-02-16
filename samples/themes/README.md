@@ -31,7 +31,7 @@
 | 29 | carnival | ![Home](carnival/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carnival/theme.zip) |
 | 30 | watercorp | ![Home](watercorp/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/watercorp/theme.zip) |
 | 31 | carrotins | ![Home](carrotins/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/carrotins/theme.zip) |
-| 32 | watercorp | ![Home](reykjavik/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/reykjavik/theme.zip) |
+| 32 | reykjavik | ![Home](reykjavik/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/reykjavik/theme.zip) |
 | 33 | kuehnenagel | ![Home](kuehnenagel/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/kuehnenagel/theme.zip) |
 | 34 | getinge | ![Home](getinge/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/getinge/theme.zip) |
 | 35 | griesser | ![Home](griesser/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/griesser/theme.zip) |
@@ -39,6 +39,7 @@
 | 37 | bni | ![Home](bni/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/bni/theme.zip) |
 | 38 | exxonmobil | ![Home](exxonmobil/home.png) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/exxonmobil/theme.zip) |
 | 39 | bt | ![Home](bt/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/bt/theme.zip) |
+| 40 | bt | ![Home](kbc/home.jpg) | [Download](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/themes/kbc/theme.zip) |
 
 
 
