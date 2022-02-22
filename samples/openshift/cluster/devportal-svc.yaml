@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devportal-svc
+spec:
+  clusterIP: None
+  ports:
+    - name: ignite-port-one
+      port: 47500
+      protocol: TCP
+      targetPort: 47500
+    - name: ignite-port-two
+      port: 47501
+      protocol: TCP
+      targetPort: 47501
+    - name: ignite-port-three
+      port: 47502
+      protocol: TCP
+      targetPort: 47502
+    - name: ignite-port-four
+      port: 47503
+      protocol: TCP
+      targetPort: 47503
+    - name: ignite-port-five
+      port: 47504
+      protocol: TCP
+      targetPort: 47504
+    - name: ignite-port-six
+      port: 47505
+      protocol: TCP
+      targetPort: 47505
+    - name: ignite-port-seven
+      port: 47506
+      protocol: TCP
+      targetPort: 47506
+    - name: ignite-port-eight
+      port: 47507
+      protocol: TCP
+      targetPort: 47507
+    - name: ignite-port-nine
+      port: 47508
+      protocol: TCP
+      targetPort: 47508
+    - name: ignite-port-ten
+      port: 47509
+      protocol: TCP
+      targetPort: 47509
+  selector:
+    app: devportal
+  sessionAffinity: None
+  type: ClusterIP

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: devportal
+  labels:
+    app: devportal
+spec:
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  serviceName: devportal-svc
+  selector:
+    matchLabels:
+      app: devportal
+  template:
+    metadata:
+      labels:
+        app: devportal
+      name: devportal
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - devportal
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: devportal
+          image: store/softwareag/devportal:10.11.0.3
+          resources:
+            limits:
+              cpu: "4"
+              memory: "4096Mi"
+            requests:
+              cpu: "1"
+              memory: "1024Mi"
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_ELASTICSEARCH_REST_URIS
+              value: http://devportal-es-svc:9200
+            - name: PORTAL_SERVER_CACHE_DISTRIBUTED_CLUSTER_PEERS_0
+              value: devportal-svc:47500..47509
+            - name: PORTAL_SERVER_CACHE_DISTRIBUTED_ENABLED
+              value: "true"
+      imagePullSecrets:
+        - name: regcred

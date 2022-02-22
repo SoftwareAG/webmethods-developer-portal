@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devportal-lb
+  labels:
+    run: devportal-lb
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8083
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: 8084
+      protocol: TCP
+      name: https
+  selector:
+    app: devportal

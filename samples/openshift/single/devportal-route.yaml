@@ -1,0 +1,17 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: devportal-route
+  namespace: devportal
+  labels:
+    run: devportal-lb
+spec:
+  host: devportal-route-devportal.apps.ocp1.eur.ad.sag
+  path: /portal
+  to:
+    kind: Service
+    name: devportal-lb
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None
