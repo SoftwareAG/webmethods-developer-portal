@@ -20,10 +20,6 @@ The required JavaScript file will be generated as `bundle.js` and would be avail
 
 ### Examples included
 
-`custom-heading` 
-
-Renders the context name as a custom header
-
 `custom-banner` 
 
 Renders the context name as a banner
