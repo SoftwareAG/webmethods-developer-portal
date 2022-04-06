@@ -33,6 +33,7 @@ Here's what it looks like after logging in to your cloud or deploying the Develo
 ![](images/welcome_page.png)
 
 **Creating an API**
+
 1. Click on the menu options on the upper right and click Manage APIs.
 
 2. Click create API
@@ -50,6 +51,7 @@ Here's what it looks like after logging in to your cloud or deploying the Develo
 Congratulations, you have successfully created your first API in the Developer Portal
 
 **Navigating and trying out APIs**
+
 Now that you created your first API, let's take a look at its details.
 
 1. Click on API Gallery in the top ribbon
@@ -73,6 +75,7 @@ This is what the API Details page looks like
 ![](images/API_details.png)
 
 **Customize the look of your Developer Portal**
+
 webMethods Developer Portal offers rich features to design your portal to reflect your brand identity. This is done through customizable themes.
 
 1. Download one of the themes from [here](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/themes)
