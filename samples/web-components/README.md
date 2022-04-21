@@ -7,5 +7,5 @@
 | 5 | Customized API box  | api-gallery-box | ![Home](api-gallery-box/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/api-gallery-box) |
 | 6 | API box with i18n switch  | api-gallery-i18ninfo | ![Home](api-gallery-i18n/sample.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/api-gallery-i18n) |
 | 7 | Group by with API Gallery  | api-gallery-grouped | ![Home](api-gallery-grouped/showcase.jpg) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/api-gallery-grouped) |
-| 8 | Youtube video embed  | wc-youtube | ![Home](youtube-video/showcase.jpg) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/youtube-video) |
+| 8 | Youtube video embed  | wc-youtube | ![Home](youtube-video/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/youtube-video) |
 
