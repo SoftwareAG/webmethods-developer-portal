@@ -22,7 +22,7 @@ webMethods Developer Portal can be provisioned in multiple ways based on the use
 
 [WEBMETHODS.io](https://www.softwareag.cloud/site/product/webmethods-api.html) -  A 30 day free trial cloud account can be provisioned in less than 15 minutes. Visit SoftwareAG cloud and get your instance running in a region of your choice.
 
-[Docker](https://hub.docker.com/_/softwareag-developer-portal) - A 90 day free trial version of Developer Portal docker image can be pulled from the docker hub.
+[Docker](https://hub.docker.com/r/softwareag/devportal) - A 90 day free trial version of Developer Portal docker image can be pulled from the docker hub.
 
 Get started
 ---------------
