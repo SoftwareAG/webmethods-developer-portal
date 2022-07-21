@@ -1,0 +1,394 @@
+openapi: 3.0.1
+info:
+  title: Portal OAuthTokens API
+  version: '10.11'
+  description: |
+    ## Overview
+    - Portal OAuth API helps to generate the OAuth tokens in API Portal using client credential grant
+    - Portal OAuth API defines the standard callback used when we try retrieve the OAuthToken using tryAPI in API Portal.
+
+    ## Redirect URI
+    Redirect URLs are a critical part of the OAuth flow. After a user successfully authorizes an application,
+    the authorization server will redirect the user back to the application with either an authorization code or access token in the URL. Because the redirect URL will contain sensitive information,
+    it is critical that the service doesn’t redirect the user to arbitrary locations.
+
+    The best way to ensure the user will only be directed to appropriate locations is to require the
+    developer to register one or more redirect URLs when they create the application.
+
+    ## Client credential grant
+    The Client Credentials grant is used when applications request an access token to access their own resources, not on behalf of a user.
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+paths:
+  /oauth/tokens:
+    post:
+      summary: Get token using client credential grant
+      description: Create a new OAuthToken for the specific application with `Client credentials` grant type
+      parameters:
+        - in: query
+          name: credentialsIn
+          description: Indicates how to supply the credentials required to the authorization server. To be sent in authorization header or in the response body. Possible values are `HEADER` or `PAYLOAD`. Default to `HEADER` if none specified.
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CC_Request'
+            examples:
+              OAuthTokenRequest:
+                $ref: '#/components/examples/TokenRequestExample'
+      responses:
+        201:
+          $ref: '#/components/responses/201'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /oauth/callback:
+    summary: OAuth Callback Uri
+    description: This API is used as a Callback/Redirect uri for OAuth applications to recevie the authorization code
+    get:
+      parameters:
+        - $ref: '#/components/parameters/code'
+        - $ref: '#/components/parameters/grant_type'
+        - $ref: '#/components/parameters/state'
+        - $ref: '#/components/parameters/error'
+        - $ref: '#/components/parameters/error_description'
+        - $ref: '#/components/parameters/access_token'
+        - $ref: '#/components/parameters/token_type'
+        - $ref: '#/components/parameters/expires_in'
+        - $ref: '#/components/parameters/refresh_token'
+        - $ref: '#/components/parameters/scope'
+      description: This API is registered as callback uri in OAuth Authorization server
+      responses:
+        200:
+          description: Response when succesfully received the callback request from authorization server.
+
+components:
+  schemas:
+    TokenList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Token'
+        count:
+          type: integer
+        _links:
+          type: object
+          properties:
+            _self:
+              type: string
+            _next:
+              type: string
+    CC_Request:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          description: Placeholder name for the OAuthToken
+          type: string
+        grantType:
+          description: Specific grant type used to generate the token. It could be `client_credentials` or `authorization_code` or `implicit`
+          type: string
+        applicationId:
+          description: uuid of the application to be used for cc request flow. the caller must have read access to the application.
+          type: string
+        scope:
+          description: scope to be used in the token generation request.
+          type: string
+    Token:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          description: Placeholder name for the OAuthToken
+          type: string
+        grantType:
+          description: Specific grant type used to generate the token. It could be `client_credentials` or `authorization_code` or `implicit`
+          type: string
+        authorizationUri:
+          type: string
+        accessUri:
+          type: string
+        redirectUri:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+        credentialsIn:
+          oneOf:
+            - enum:
+                - HEADER
+                - PAYLOAD
+          type: string
+        token:
+          $ref: '#/components/schemas/TokenResponse'
+        applicationId:
+          type: string
+        scope:
+          type: string
+        status:
+          oneOf:
+            - enum:
+                - INACTIVE
+                - ACTIVE
+          type: string
+    201:
+      type: object
+      properties:
+        id:
+          description: unique identifier of the token
+          type: string
+        _self:
+          description: link for retrieving the specific token
+          type: string
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: string
+        refresh_token:
+          type: string
+        scope:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+
+  parameters:
+    page:
+      in: query
+      name: page
+      schema:
+        type: integer
+      description: Page number
+    appId:
+      in: query
+      name: appId
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: Enter a valid app id
+    credentialsIn:
+      in: query
+      name: credentialsIn
+      required: false
+      schema:
+        type: string
+    id:
+      in: path
+      name: id
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string
+        description: Enter a valid id
+    code:
+      in: query
+      description: This parameter is the authorization code that the client previously received from the authorization server.
+      name: code
+      required: false
+      schema:
+        type: string
+    grant_type:
+      in: query
+      name: grant_type
+      description: grant type used in the flow. Valid values are `client_credentials` or `authorization_code` or `implicit`
+      required: false
+      schema:
+        type: string
+    state:
+      in: query
+      name: state
+      description: The state parameter preserves some state objects set by the client in the Authorization request and makes it available to the client in the response.
+      required: false
+      schema:
+        type: string
+    error:
+      in: query
+      name: error
+      description: refers to the error code if occurred during OAuth grant flow
+      required: false
+      schema:
+        type: string
+    error_description:
+      in: query
+      name: error_description
+      description: meaninful description for the error indicated usign error code
+      required: false
+      schema:
+        type: string
+    access_token:
+      in: query
+      name: access_token
+      description: actual OAuthToken generated by the authorization server. This is only applicable in Implicit grant where authorization server responds back with actual token.
+      required: false
+      schema:
+        type: string
+    token_type:
+      in: query
+      name: token_type
+      required: false
+      schema:
+        type: string
+    expires_in:
+      in: query
+      description: duration in which the token expires. usually in seconds.
+      name: expires_in
+      required: false
+      schema:
+        type: string
+    refresh_token:
+      in: query
+      name: refresh_token
+      required: false
+      schema:
+        type: string
+    scope:
+      in: query
+      name: scope
+      description: Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. An application can request one or more scopes, this information is then presented to the user in the consent screen, and the access token issued to the application will be limited to the scopes granted.
+      required: false
+      schema:
+        type: string
+
+  responses:
+    201:
+      description: Response when token is created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/201'
+          examples:
+            201:
+              $ref: '#/components/examples/201'
+    TokenResponse:
+      description: Token is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Token'
+          examples:
+            TokenResponseExample:
+              $ref: '#/components/examples/TokenResponseExample'
+    BadRequest:
+      description: User provided data is not correct
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400:
+              $ref: '#/components/examples/400'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+
+  examples:
+    TokenListExample:
+      value:
+        count: 1
+        _links:
+          _self: /rest/v1/oauth/tokens?page=0
+        result:
+          - id: 40bad9d0-d6dc-4a23-b486-fbc4888ea0e7
+            owner: 40bad9d0-d6dc-4a23-b486-fbc4888ea0e7
+            name: Token
+            token:
+              access_token: 06f64133b6a14297b41d9516867edd44
+              token_type: Bearer
+              expires_in: 3600
+            applicationId: 06f64133b6a14297b41d9516867edd44
+            scope: Read
+            status: ACTIVE
+    TokenRequestExample:
+      value:
+        name: ClientCredentialToken
+        scope: Read
+        applicationId: 55de08f7-9db9-4d60-b478-2355fa2520d9
+    201:
+      value:
+        id: 015a2458-9f62-4ac6-a97e-8c2454c0ef61
+        _self: /rest/v1/oauth/tokens/015a2458-9f62-4ac6-a97e-8c2454c0ef61
+    TokenState:
+      value:
+        name: implicit token
+        applicationId: 015a2458-9f62-4ac6-a97e-8c2454c0ef61
+        grantType: implicit
+        authorizationUri: https://randomurl.com
+        accessUri: https://randomurl.com
+        redirectUri: https://randomurl.com
+        clientId: 015a2458-9f62-4ac6-a97e-8c2454c0ef61
+        clientSecret: 015a2458-9f62-4ac6-a97e-8c2454c0ef61
+        scope: Read
+        credentialsIn: HEADER
+    400:
+      value:
+        code: 400
+        message: User provided data is not correct
+    401:
+      value:
+        code: 401
+        message: Invalid credentials
+    403:
+      value:
+        code: 403
+        message: Insufficient privileges
+    404:
+      value:
+        code: 400
+        message: Unable to find the token
+
+
+

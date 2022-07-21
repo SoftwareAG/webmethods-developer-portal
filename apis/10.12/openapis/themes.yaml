@@ -21,7 +21,9 @@ info:
 
     ### Page CRUD
 
-    The API Portal Administrator can able to create new page and customize the page.
+    The API Portal Administrator can able to create new page, customize the page and assign/edit permissions for the custom pages.
+    Based on the permissions assigned, only those users can access/view the custom pages.
+
 
     ---
     ### Layout CRUD
@@ -554,7 +556,7 @@ paths:
       description: |-
         Endpoint to obtain details of a particular page inside a theme.
 
-        *Endpoint can be accessed only by a user having **Administrator** role
+        *Endpoint can be accessed only by a user having **Administrator** role or **READ** permission
       responses:
         '200':
           $ref: '#/components/responses/PageDetail'
@@ -613,6 +615,109 @@ paths:
             type: string
           description: Unique Identification for page. Refers to the name of the page. For example `HomePage`
 
+  /themes/{id}/pages/{name}/access:
+
+    put:
+      tags:
+        - Page management
+      summary: Update permission for an custom page
+      description: |-
+        Developer Portal lets you to create custom pages. By this resource, the portal will provide
+        possibility to assign & enforce role based access for the custom pages.
+
+        *Endpoint can be accessed only by a user having **Administrator** role
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessControlList'
+            example:
+              - {
+                "entries": [
+                  {
+                    "subject": "72416718-bf14-4228-8e71-b4c803a44375",
+                    "type": "COMMUNITY",
+                    "permission": "READ"
+                  },
+                  {
+                    "subject": "1e4332f6-5a7a-3210-b5fb-fb92c7c60cce",
+                    "type": "USER",
+                    "permission": "READ"
+                  },
+                  {
+                    "subject": "8ad53d34-550a-35f8-ac0b-c540aa751dbf",
+                    "type": "GROUP",
+                    "permission": "READ"
+                  }
+                ]
+              }
+
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeUpdate'
+              example:
+                code: 200
+                message: Updated successfully
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for theme. Refers to the GUID of the theme.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        - name: name
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for page. Refers to the name of the page. For example `HomePage`
+
+    get:
+      tags:
+        - Page management
+      summary: Retrieve access permission for particular page by name identified within a theme
+      description: |-
+        Developer Portal lets you to create custom pages. By this resource, the portal will provide
+        possibility to retrieve the access permissions defined for a custom pages.
+
+        *Endpoint can be accessed only by a user having **Administrator** role
+      responses:
+        '200':
+          $ref: '#/components/responses/Access'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for theme. Refers to the GUID of the theme.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        - name: name
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for page. Refers to the name of the page. For example `HomePage`
 
   /themes/{id}/layouts:
     get:
@@ -1200,6 +1305,36 @@ components:
           type: string
           description: false if the page is available by default in the API portal
 
+    AccessControlList:
+      type: Array
+      description: List of AccessControlEntries
+      items:
+        $ref: '#/components/schemas/AccessControlEntry'
+
+    AccessControlEntry:
+      title: Access control entry
+      type: object
+      properties:
+        subject:
+          type: string
+          description: GUID of the user/group/community
+        displayName:
+          type: string
+          description: Display name of the subject
+        type:
+          type: string
+          description: type of component
+          enum:
+            - USER
+            - GROUP
+            - ROLE
+            - COMMUNITY
+        permission:
+          type: object
+          description: Permission to be assigned
+          enum:
+            - READ
+
     PageDetail:
       title: Definition
       type: object
@@ -1220,7 +1355,6 @@ components:
           type: array
           description: List of components
           items:
-            type:
             $ref: '#/components/schemas/PageDetail'
 
     Property:
@@ -1291,6 +1425,16 @@ components:
           examples:
             Layouts:
               $ref: '#/components/examples/Layouts'
+
+    Access:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccessControlList'
+          examples:
+            Pages:
+              $ref: '#/components/examples/acl'
 
     PageDetail:
       description: ok
@@ -1365,6 +1509,29 @@ components:
           custom: false
         - name: footer
           custom: false
+
+    acl:
+      value:
+        {
+          "entries": [
+            {
+              "subject": "72416718-bf14-4228-8e71-b4c803a44375",
+              "type": "COMMUNITY",
+              "permission": "READ"
+            },
+            {
+              "subject": "1e4332f6-5a7a-3210-b5fb-fb92c7c60cce",
+              "type": "USER",
+              "permission": "READ"
+            },
+            {
+              "subject": "8ad53d34-550a-35f8-ac0b-c540aa751dbf",
+              "type": "GROUP",
+              "permission": "READ"
+            }
+          ]
+        }
+
 
     Layouts:
       value:

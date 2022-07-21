@@ -215,8 +215,8 @@ paths:
             type: string
             description: Comma separated Audit event names. Varies depending on the selected system parameter.
             enum:
-              - $ref: '#/components/schemas/EventType'
-              - $ref: '#/components/schemas/UmcEventType'
+              - $ref: '#/components/schemas/CoreEvents'
+              - $ref: '#/components/schemas/UmcEvents'
         - name: system
           in: query
           schema:
@@ -292,10 +292,53 @@ paths:
       tags:
         - Events
 
+  /events/transactions:
+    post:
+      security:
+        - basicAuth: [ ]
+      summary: Store transactional events
+      description: Store events received from third party providers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionalEvents'
+            examples:
+              TransactionalEvent:
+                $ref: '#/components/examples/TransactionalEvents'
+
+      responses:
+        202:
+          description: Accepted
+        500:
+          description: Internal Error
+
+  /events/{id}:
+    get:
+      security:
+        - basicAuth: [ ]
+      summary: Get audit event by id
+      parameters:
+        - name: id
+          in: path
+          description: Unique identification of Audit event. Refers to the GUID of the event.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/AuditResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Not found
+
 components:
   schemas:
-    EventType:
-      title: Type of the event
+    CoreEvents:
+      title: List of Portal audit events
       description: Different kind of events are recorded by the API Portal. User could use any one this to query that particular type of event
       type: string
       example: API_PUBLISH_EVENT
@@ -337,8 +380,9 @@ components:
         - COMMENT_DELETION_EVENT
         - SIGN_UP_EVENT
         - CRON_EXECUTION_EVENT
-    UmcEventType:
+    UmcEvents:
       type: string
+      description: List of UMC audit events
       enum:
         - LOGIN_SUCCESSFUL
         - LOGIN_FAILED
@@ -431,6 +475,57 @@ components:
         created:
           type: string
           format: 'yyyy-MM-dd HH:mm'
+    TransactionalEvents:
+      type: object
+      properties:
+        request:
+          type: string
+          description: Request made during the transaction
+        nativeHttpMethod:
+          type: string
+          description: Http method invoked
+        apiName:
+          type: string
+          description: Name of the API tried
+        responseCode:
+          type: string
+          description: Response code of the transaction
+        apiVersion:
+          type: string
+          description: Version of the API
+        providerTime:
+          type: string
+          description: Time taken by the provider
+        apiId:
+          type: string
+          description: Id of the API invoked
+        applicationName:
+          type: string
+          description: Name of the application
+        applicationIp:
+          type: string
+          description: Ip address of the application
+        consumerId:
+          type: string
+          description: Id of the consumer
+        totalTime:
+          type: string
+          description: Total time taken for the transaction
+        operationName:
+          type: string
+          description: Name of the operation invoked in the transaction
+        totalSize:
+          type: string
+          description: Total size of the response
+        response:
+          type: string
+          description: Actual response of the given transaction
+        applicationId:
+          type: string
+          description: Id of the application
+        consumerName:
+          type: string
+          description: Name of the consumer
 
   securitySchemes:
     basicAuth:
@@ -476,6 +571,15 @@ components:
               $ref: '#/components/examples/PortalAuditSearchResponse'
             UmcAuditSearchResponse:
               $ref: '#/components/examples/UmcAuditSearchResponse'
+    AuditResponse:
+      description: Successfully retrieved the audit event with the given id
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuditEventRepositoryObject'
+          examples:
+            AuditResponse:
+              $ref: '#/components/examples/AuditResponse'
 
   examples:
     EventsErrorResponse:
@@ -493,6 +597,15 @@ components:
       value:
         code: 403
         message: Insufficient privileges
+    AuditResponse:
+      value:
+        id: bfe798fc-71e0-4300-8b74-d86524565a64
+        parameters:
+          provider_id: 677e11aa-3ce0-45e4-9590-731c61fcd402
+          source: ProviderManager
+          provider_name: Provider1
+          created_by: 54b53072-540e-3eb8-b8e9-343e71f28176
+        type: PROVIDER_PUBLISH_EVENT
     PortalAuditSearchResponse:
       value:
         result:
@@ -525,4 +638,22 @@ components:
         count: 1
         _links:
           _self: /portal/rest/v1/events?from=2021-09-16&to=2021-09-20&system=UMC&page=0
+    TransactionalEvents:
+      value:
+        request: null
+        nativeHttpMethod: get
+        apiName: quotes
+        responseCode: 200
+        apiVersion: 1.0
+        providerTime: 4711
+        apiId: 80102551-e7da-11ea-79ab-026fa4f0ed6c
+        applicationName: Sample
+        applicationIp: 127.0.0.1
+        consumerId: 567f89cb-8182-3272-b69e-5d8532eb3ac5
+        totalTime: 6264
+        operationName: /api/v1/quotes/{quoteNumber}
+        totalSize: 4663
+        response: Some String response
+        applicationId: d0580b41-4167-11eb-0217-0672e01da194
+        consumerName: john.doe@sample.com
 

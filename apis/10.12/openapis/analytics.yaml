@@ -1,0 +1,1189 @@
+openapi: 3.0.1
+info:
+  title: Portal Analytics API
+  version: '10.11'
+  description: |-
+    ## Overview
+    Portal Analytics API is used to get deeper insgihts about the APIs and applications in the system.
+    It gives detailed information about the trends, top hits, usage based on the filters applied.
+    There are variety of feeds and each is responsible for providing the aforesaid specific informations.
+
+    ## Feeds available
+    Following are the list of anaytic feeds available in the system
+      - TRANSACTION_SUMMARY_FEED
+      - API_ACCESS_TREND_FEED
+      - APP_ACCESS_TREND_FEED
+      - API_RESPONSE_TIME_TREND_FEED
+      - TOP_API_HITS_BY_ACCESS_FEED
+      - TOP_API_BY_FOLLOWERS_FEED
+      - TOP_RESOURCE_HITS_BY_ACCESS_FEED
+      - TOP_STATUSCODE_HITS_BY_ACCESS_FEED
+      - TOP_APP_HITS_BY_ACCESS_FEED
+      - APP_DISTRIBUTION_IN_API_FEED
+      - API_DISTRIBUTION_IN_APP_FEED
+      - SIGN_UP_TREND_FEED
+      - LOGIN_TREND_FEED
+      - ACCESS_LOGS
+      - TOP_APP_TYPE_HITS_BY_ACCESS_FEED
+      - USER_SIGNUP_SUMMARY_FEED
+      - USER_LOGIN_SUMMARY_FEED
+      - TOP_CONSUMER_LOGINS
+      - TOTAL_USER_SIGNUP_AND_DELETE_FEED
+      - ENTITY_SUMMARY_FEED
+
+    ## Authorization
+    - User having Administrator permission can access **every** feed.
+
+    - User having Provider permission can access the below feeds **and** the feeds applicable for Consumer users.
+      The metrics are about **all** published APIs and subscribed applications.
+        - ENTITY_SUMMARY_FEED
+        - TOP_API_VIEW_HITS_BY_ACCESS_FEED
+        - TOP_API_BY_FOLLOWERS_FEED
+        - API_VIEW_TREND_FEED
+        - TOP_API_TEST_HITS_BY_ACCESS_FEED
+        - CONSUMPTION_TREND_FEED
+        - TOP_API_POST_HITS_BY_ACCESS_FEED
+        - TOP_ENGAGED_USERS
+
+    - User having Consumer permission can access the below feeds.
+      The metrics are **only** about his/her own APIs and Applications.
+        - TRANSACTION_SUMMARY_FEED
+        - TOP_STATUSCODE_HITS_BY_ACCESS_FEED
+        - API_ACCESS_TREND_FEED
+        - TOP_API_HITS_BY_ACCESS_FEED
+        - ACCESS_LOGS
+        - TOP_APP_TYPE_HITS_BY_ACCESS_FEED
+        - APP_ACCESS_TREND_FEED
+        - API_DISTRIBUTION_IN_APP_FEED
+        - TOP_APP_HITS_BY_ACCESS_FEED
+        - API_RESPONSE_TIME_TREND_FEED
+        - TOP_RESOURCE_HITS_BY_ACCESS_FEED
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+paths:
+  '/analytics/{id}':
+    post:
+      summary: Get the analytic insights for the given feed id and matching filter criteria.
+      description: Get the analytic insights for the given feed id and matching filter criteria.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WidgetFilters'
+            examples:
+              WidgetFilters:
+                $ref: '#/components/examples/WidgetFilters'
+      responses:
+        '200':
+          $ref: '#/components/responses/AnalyticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+            - TRANSACTION_SUMMARY_FEED
+            - API_ACCESS_TREND_FEED
+            - APP_ACCESS_TREND_FEED
+            - API_RESPONSE_TIME_TREND_FEED
+            - TOP_API_HITS_BY_ACCESS_FEED
+            - TOP_API_BY_FOLLOWERS_FEED
+            - TOP_RESOURCE_HITS_BY_ACCESS_FEED
+            - TOP_STATUSCODE_HITS_BY_ACCESS_FEED
+            - TOP_APP_HITS_BY_ACCESS_FEED
+            - APP_DISTRIBUTION_IN_API_FEED
+            - API_DISTRIBUTION_IN_APP_FEED
+            - SIGN_UP_TREND_FEED
+            - LOGIN_TREND_FEED
+            - ACCESS_LOGS
+            - TOP_APP_TYPE_HITS_BY_ACCESS_FEED
+            - USER_SIGNUP_SUMMARY_FEED
+            - USER_LOGIN_SUMMARY_FEED
+            - TOP_CONSUMER_LOGINS
+            - TOTAL_USER_SIGNUP_AND_DELETE_FEED
+
+  '/analytics/ACCESS_LOGS':
+    post:
+      summary: Get the access logs for the matching filter criteria
+      description: Get the access logs for the matching filter criteria
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WidgetFilters'
+            examples:
+              WidgetFilters:
+                $ref: '#/components/examples/WidgetFilters'
+      responses:
+        '200':
+          $ref: '#/components/responses/SearchResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number to retrieve
+
+components:
+  schemas:
+    WidgetFilters:
+      type: object
+      properties:
+        apis:
+          type: array
+          description: List of api ids
+          items:
+            type: string
+        applications:
+          type: array
+          description: List of application ids
+          items:
+            type: string
+        dates:
+          type: array
+          description: Start and end date
+          items:
+            type: string
+        resources:
+          type: array
+          description: List of resource ids
+          items:
+            type: string
+        methods:
+          type: array
+          description: List of method ids
+          items:
+            type: string
+        status:
+          type: array
+          description: Status code
+          items:
+            type: string
+        interval:
+          description: Time interval
+          type: string
+        user:
+          description: User id
+          type: string
+    AnalyticsResponse:
+      type: object
+      properties:
+        value:
+          description: Value of the metric
+          type: integer
+        detail:
+          type: array
+          description: Analytics details
+          items:
+            $ref: '#/components/schemas/AnalyticsResponse'
+        metadata:
+          type: object
+          description: Additional metadata about the metric
+          additionalProperties: true
+    TransactionalEvent:
+      type: object
+      additionalProperties: true
+      properties:
+        cachedResponse:
+          type: string
+          description: Cached response if any
+        providerTime:
+          type: string
+          description: Time taken by the provider
+        request:
+          type: string
+          description: Actual request made
+        response:
+          type: string
+          description: Actual response of the event invocation
+        totalSize:
+          type: string
+        totalTime:
+          type: string
+          description: Total time taken for the invocation
+        responseCode:
+          type: string
+          description: Response code of the event invocation
+        nativeHttpMethod:
+          type: string
+          description: HTTP method invoked
+        operationName:
+          type: string
+          description: Name of the resource invoked
+        consumerId:
+          description: Identifier of the application
+          type: string
+        consumerName:
+          description: Application name
+          type: string
+        apiId:
+          description: Identifier of the API
+          type: string
+        apiName:
+          type: string
+          description: Name of the API
+    SearchResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: Result list
+          items:
+            $ref: '#/components/schemas/TransactionalEvent'
+        count:
+          type: integer
+          description: Total count of events
+        _links:
+          type: object
+          description: Links of current and next pages
+          properties:
+            _self:
+              type: string
+              description: Current page reference
+            _next:
+              type: string
+              description: Next page reference
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: array
+          description: Error detail list
+          items:
+            type: string
+
+  responses:
+    AnalyticsResponse:
+      description: Analytics response of the feed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AnalyticsResponse'
+          examples:
+            TransactionSummaryFeedResponse:
+              $ref: '#/components/examples/TransactionSummaryFeedResponse'
+            TopApiHitsResponse:
+              $ref: '#/components/examples/TopApiHitsResponse'
+            TopApiByFollowersResponse:
+              $ref: '#/components/examples/TopApiByFollowersResponse'
+            TopStatusCodeHitsResponse:
+              $ref: '#/components/examples/TopStatusCodeHitsResponse'
+            TopAppHitsResponse:
+              $ref: '#/components/examples/TopAppHitsResponse'
+            ApiAccessTrendResponse:
+              $ref: '#/components/examples/ApiAccessTrendResponse'
+            AppAccessTrendResponse:
+              $ref: '#/components/examples/AppAccessTrendResponse'
+            SignUpTrendFeedResponse:
+              $ref: '#/components/examples/SignupTrendFeedResponse'
+            LoginTrendFeedResponse:
+              $ref: '#/components/examples/LoginTrendFeedResponse'
+            TopAppTypeHitsFeedResponse:
+              $ref: '#/components/examples/TopAppTypeHitsFeedResponse'
+            UserSignUpSummaryFeedResponse:
+              $ref: '#/components/examples/UserSignUpSummaryFeedResponse'
+            UserLoginSummaryFeedResponse:
+              $ref: '#/components/examples/UserLoginSummaryFeedResponse'
+            ApiResponseTimeTrendFeedResponse:
+              $ref: '#/components/examples/ApiResponseTimeTrendFeedResponse'
+            TotalUserSignupAndDeleteFeedResponse:
+              $ref: '#/components/examples/TotalUserSignupAndDeleteFeedResponse'
+            TopResourceHitsFeedResponse:
+              $ref: '#/components/examples/TopResourceHitsFeedResponse'
+            AppDistributionInApiFeedResponse:
+              $ref: '#/components/examples/AppDistributionInApiFeedResponse'
+            ApiDistributionInAppFeedResponse:
+              $ref: '#/components/examples/ApiDistributionInAppFeedResponse'
+            EntitySummaryFeedResponse:
+              $ref: '#/components/examples/EntitySummaryFeedResponse'
+    SearchResponse:
+      description: Analytics response of the feed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+          examples:
+            AccessLogsResponse:
+              $ref: '#/components/examples/SearchResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+
+  examples:
+    EntitySummaryFeedResponse:
+      value:
+        detail:
+          - metadata:
+              APPLICATION: 3
+              API: 5
+              TOPIC: 1
+    ApiDistributionInAppFeedResponse:
+      value:
+        value: 3223
+        detail:
+          - value: 1483
+            detail:
+              - value: 990
+                metadata:
+                  id: 58436a0d-df78-4c9b-968f-2d8d1c082283
+                  name: HttpMethodInvoker
+                  version: '1.0'
+              - value: 493
+                metadata:
+                  id: d6376456-9d08-4a3e-b44d-7f40bb206d51
+                  name: HTTPBin_Format_API
+                  version: '1.0'
+            metadata:
+              id: 21236a05-dbd0-44cd-a62d-df16b7798892
+              name: HTTPApp
+          - value: 744
+            detail:
+              - value: 744
+                metadata:
+                  id: 9fe63f05-1ec9-47a2-9133-e786f6af20d9
+                  name: JsonPlaceholderUsers
+                  version: '1.0'
+            metadata:
+              id: 63a2d01a-c6cd-4d22-b127-6545c0abb856
+              name: PlaceholderApp
+          - value: 498
+            detail:
+              - value: 498
+                metadata:
+                  id: c2eb4247-8274-4ffb-978e-382c23825cfa
+                  name: PhotosAPI
+                  version: '1.0'
+            metadata:
+              id: 379cbafd-b3a3-4d10-aa8c-b639eb1b7e05
+              name: PhotoApp
+          - value: 498
+            detail:
+              - value: 498
+                metadata:
+                  id: d3af0fc6-1e8b-42a8-a7bb-79524cc346e6
+                  name: XKCD_API
+                  version: '1.0'
+            metadata:
+              id: 4b8f34e5-bdb9-4250-8678-7784e92781c3
+              name: XKCDApp
+    AppDistributionInApiFeedResponse:
+      value:
+        value: 3223
+        detail:
+          - value: 990
+            detail:
+              - value: 990
+                metadata:
+                  id: 21236a05-dbd0-44cd-a62d-df16b7798892
+                  name: HTTPApp
+            metadata:
+              id: 58436a0d-df78-4c9b-968f-2d8d1c082283
+              name: HttpMethodInvoker
+              version: '1.0'
+          - value: 744
+            detail:
+              - value: 744
+                metadata:
+                  id: 63a2d01a-c6cd-4d22-b127-6545c0abb856
+                  name: PlaceholderApp
+            metadata:
+              id: 9fe63f05-1ec9-47a2-9133-e786f6af20d9
+              name: JsonPlaceholderUsers
+              version: '1.0'
+          - value: 498
+            detail:
+              - value: 498
+                metadata:
+                  id: 379cbafd-b3a3-4d10-aa8c-b639eb1b7e05
+                  name: PhotoApp
+            metadata:
+              id: c2eb4247-8274-4ffb-978e-382c23825cfa
+              name: PhotosAPI
+              version: '1.0'
+          - value: 498
+            detail:
+              - value: 498
+                metadata:
+                  id: 4b8f34e5-bdb9-4250-8678-7784e92781c3
+                  name: XKCDApp
+            metadata:
+              id: d3af0fc6-1e8b-42a8-a7bb-79524cc346e6
+              name: XKCD_API
+              version: '1.0'
+          - value: 493
+            detail:
+              - value: 493
+                metadata:
+                  id: 21236a05-dbd0-44cd-a62d-df16b7798892
+                  name: HTTPApp
+            metadata:
+              id: d6376456-9d08-4a3e-b44d-7f40bb206d51
+              name: HTTPBin_Format_API
+              version: '1.0'
+    TopResourceHitsFeedResponse:
+      value:
+        value: 3223
+        detail:
+          - value: 498
+            metadata:
+              id: '/photos/{id}'
+              resource: '/photos/{id}'
+          - value: 498
+            metadata:
+              id: '/{id}/info.0.json'
+              resource: '/{id}/info.0.json'
+          - value: 494
+            metadata:
+              id: '/users/{id}'
+              resource: '/users/{id}'
+          - value: 250
+            metadata:
+              id: /delete
+              resource: /delete
+          - value: 250
+            metadata:
+              id: /post
+              resource: /post
+    WidgetFilters:
+      value:
+        apis:
+          - 550c52c8-7812-4f69-ac1d-7951351b5c88
+        applications:
+          - 1d4a465a-3b9a-3b0e-b14d-ae3d08c3b1d9
+    ApiResponseTimeTrendFeedResponse:
+      value:
+        value: 3226
+        detail:
+          - value: 991
+            detail:
+              - value: 761
+                metadata:
+                  key: '2021-04-01T05:20:00.000Z'
+              - value: 673
+                metadata:
+                  key: '2021-04-01T05:25:00.000Z'
+              - value: 680
+                metadata:
+                  key: '2021-04-01T05:30:00.000Z'
+              - value: 656
+                metadata:
+                  key: '2021-04-01T05:35:00.000Z'
+              - value: 747
+                metadata:
+                  key: '2021-04-01T05:40:00.000Z'
+            metadata:
+              id: 58436a0d-df78-4c9b-968f-2d8d1c082283
+              name: HttpMethodInvoker
+              version: '1.0'
+          - value: 744
+            detail:
+              - value: 918
+                metadata:
+                  key: '2021-04-01T05:20:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:21:00.000Z'
+              - value: 391
+                metadata:
+                  key: '2021-04-01T05:22:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:23:00.000Z'
+              - value: 423
+                metadata:
+                  key: '2021-04-01T05:24:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:25:00.000Z'
+              - value: 434
+                metadata:
+                  key: '2021-04-01T05:26:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:27:00.000Z'
+              - value: 429
+                metadata:
+                  key: '2021-04-01T05:28:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:29:00.000Z'
+              - value: 405
+                metadata:
+                  key: '2021-04-01T05:30:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:31:00.000Z'
+              - value: 425
+                metadata:
+                  key: '2021-04-01T05:32:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:33:00.000Z'
+              - value: 395
+                metadata:
+                  key: '2021-04-01T05:34:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:35:00.000Z'
+              - value: 412
+                metadata:
+                  key: '2021-04-01T05:36:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:37:00.000Z'
+              - value: 447
+                metadata:
+                  key: '2021-04-01T05:38:00.000Z'
+            metadata:
+              id: 9fe63f05-1ec9-47a2-9133-e786f6af20d9
+              name: JsonPlaceholderUsers
+              version: '1.0'
+          - value: 500
+            detail:
+              - value: 1597
+                metadata:
+                  key: '2021-04-01T05:20:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:21:00.000Z'
+              - value: 281
+                metadata:
+                  key: '2021-04-01T05:22:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:23:00.000Z'
+              - value: 229
+                metadata:
+                  key: '2021-04-01T05:24:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:25:00.000Z'
+              - value: 283
+                metadata:
+                  key: '2021-04-01T05:26:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:27:00.000Z'
+              - value: 293
+                metadata:
+                  key: '2021-04-01T05:28:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:29:00.000Z'
+              - value: 288
+                metadata:
+                  key: '2021-04-01T05:30:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:31:00.000Z'
+              - value: 247
+                metadata:
+                  key: '2021-04-01T05:32:00.000Z'
+            metadata:
+              id: d3af0fc6-1e8b-42a8-a7bb-79524cc346e6
+              name: XKCD_API
+              version: '1.0'
+          - value: 498
+            detail:
+              - value: 1636
+                metadata:
+                  key: '2021-04-01T05:20:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:21:00.000Z'
+              - value: 468
+                metadata:
+                  key: '2021-04-01T05:22:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:23:00.000Z'
+              - value: 401
+                metadata:
+                  key: '2021-04-01T05:24:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:25:00.000Z'
+              - value: 377
+                metadata:
+                  key: '2021-04-01T05:26:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:27:00.000Z'
+              - value: 425
+                metadata:
+                  key: '2021-04-01T05:28:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:29:00.000Z'
+              - value: 398
+                metadata:
+                  key: '2021-04-01T05:30:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-04-01T05:31:00.000Z'
+              - value: 458
+                metadata:
+                  key: '2021-04-01T05:32:00.000Z'
+            metadata:
+              id: c2eb4247-8274-4ffb-978e-382c23825cfa
+              name: PhotosAPI
+              version: '1.0'
+          - value: 493
+            detail:
+              - value: 911
+                metadata:
+                  key: '2021-03-29T10:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-29T22:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-30T10:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-30T22:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-31T10:00:00.000Z'
+              - value: 707
+                metadata:
+                  key: '2021-03-31T22:00:00.000Z'
+            metadata:
+              id: d6376456-9d08-4a3e-b44d-7f40bb206d51
+              name: HTTPBin_Format_API
+              version: '1.0'
+    SignupTrendFeedResponse:
+      value:
+        value: 1
+        detail:
+          - value: 1
+            detail:
+              - value: 1
+                metadata:
+                  key: '2021-03-26T06:30:00.000Z'
+            metadata:
+              event_type: Signup
+    TransactionSummaryFeedResponse:
+      value:
+        value: 100
+        detail:
+          - metadata:
+              yesterday: 10
+              today: 20
+              thisWeek: 40
+              lastWeek: 10
+              thisMonth: 60
+              lastMonth: 40
+    TopApiHitsResponse:
+      value:
+        value: 85
+        detail:
+          - value: 40
+            metadata:
+              id: 1f5a934f-38ee-4baf-a206-651fd2c4e5a7
+              name: SwaggerPet2
+              version: 1.0.5
+          - value: 28
+            metadata:
+              id: 527f43fb-d699-4f78-92c0-447f39ed26be
+              name: SwaggerPet3
+              version: 1.0.5
+          - value: 17
+            metadata:
+              id: ec196cd7-bfaf-4f43-a0e8-17fbbdd8f86b
+              name: SwaggerGW
+              version: 1.0.5
+
+    TopApiByFollowersResponse:
+      value:
+        value: 13
+        detail:
+          - value: 4
+            metadata:
+              id: d51f6adb-144e-4e48-b451-7abd82c7b38b
+              name: petStore5
+              version: 1.0.5
+          - value: 3
+            metadata:
+              id: e4a84d8e-5d20-4bd0-a761-3d8581924276
+              name: petStore1
+              version: 1.0.5
+          - value: 2
+            metadata:
+              id: '01677380-9270-4e24-a9ab-c3a716ad9d87'
+              name: Portal Configurations API
+              version: '10.11'
+          - value: 2
+            metadata:
+              id: 0f35edb1-ff09-42cb-b91c-f447e8fc94fb
+              name: Plan Management API
+              version: '10.11'
+          - value: 2
+            metadata:
+              id: 81a6cc39-5a36-489f-89a0-ef4cf8878a8e
+              name: Portal OAuthToken API
+              version: '10.11'
+
+    UserSignUpSummaryFeedResponse:
+      value:
+        value: 1
+        detail:
+          - value: 0
+            metadata:
+              yesterday: '0'
+              today: '0'
+              thisWeek: '0'
+              lastMonth: '1'
+              thisMonth: '0'
+              lastWeek: '1'
+    UserLoginSummaryFeedResponse:
+      value:
+        value: 26
+        detail:
+          - value: 0
+            metadata:
+              yesterday: '0'
+              today: '5'
+              thisWeek: '13'
+              lastMonth: '21'
+              thisMonth: '5'
+              lastWeek: '13'
+    SignUpTrendFeedResponse:
+      value:
+        value: 1
+        detail:
+          - value: 1
+            detail:
+              - value: 1
+                metadata:
+                  key: '2021-03-26T06:30:00.000Z'
+            metadata:
+              id: Signup
+              name: Signup
+    LoginTrendFeedResponse:
+      value:
+        value: 25
+        detail:
+          - value: 25
+            detail:
+              - value: 12
+                metadata:
+                  key: '2021-03-26T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-26T16:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-27T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-27T16:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-28T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-28T16:00:00.000Z'
+              - value: 4
+                metadata:
+                  key: '2021-03-29T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-29T16:00:00.000Z'
+              - value: 4
+                metadata:
+                  key: '2021-03-30T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-30T16:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-31T04:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-31T16:00:00.000Z'
+              - value: 5
+                metadata:
+                  key: '2021-04-01T04:00:00.000Z'
+            metadata:
+              event_type: Login
+    TotalUserSignupAndDeleteFeedResponse:
+      value:
+        value: 1
+        detail:
+          - value: 1
+            metadata:
+              id: Signup
+              name: Signup
+    TopStatusCodeHitsResponse:
+      value:
+        value: 85
+        detail:
+          - value: 67
+            metadata:
+              id: '200'
+              status: '200'
+          - value: 11
+            metadata:
+              id: '404'
+              status: '404'
+          - value: 6
+            metadata:
+              id: '401'
+              status: '401'
+          - value: 1
+            metadata:
+              id: '408'
+              status: '408'
+    TopAppHitsResponse:
+      value:
+        value: 85
+        detail:
+          - value: 38
+            metadata:
+              id: fa4d2f09-a8c4-45ce-bf1b-77375bcd7104
+              name: MyApp
+          - value: 28
+            metadata:
+              id: b8bccea3-0d94-41c7-861e-027e27a997d6
+              name: consumer2App2
+          - value: 12
+            metadata:
+              id: b06ec36d-fc00-4ffd-a9d1-2510d69082ba
+              name: consumer2App
+          - value: 7
+            metadata:
+              name: UNKNOWN
+    ApiAccessTrendResponse:
+      value:
+        value: 85
+        detail:
+          - value: 40
+            detail:
+              - value: 15
+                metadata:
+                  key: '2021-03-18T09:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T12:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T15:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T18:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T21:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T00:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T03:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T06:00:00.000Z'
+              - value: 25
+                metadata:
+                  key: '2021-03-19T09:00:00.000Z'
+            metadata:
+              id: 1f5a934f-38ee-4baf-a206-651fd2c4e5a7
+              name: SwaggerPet2
+              version: 1.0.5
+          - value: 28
+            detail:
+              - value: 14
+                metadata:
+                  key: '2021-03-22T10:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T13:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T16:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T19:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T22:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-23T01:00:00.000Z'
+              - value: 14
+                metadata:
+                  key: '2021-03-23T04:00:00.000Z'
+            metadata:
+              id: 527f43fb-d699-4f78-92c0-447f39ed26be
+              name: SwaggerPet3
+              version: 1.0.5
+          - value: 17
+            detail:
+              - value: 6
+                metadata:
+                  key: '2021-03-18T06:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T09:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T12:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T15:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T18:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T21:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T00:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T03:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T06:00:00.000Z'
+              - value: 11
+                metadata:
+                  key: '2021-03-19T09:00:00.000Z'
+            metadata:
+              id: ec196cd7-bfaf-4f43-a0e8-17fbbdd8f86b
+              name: SwaggerGW
+              version: 1.0.5
+    TopAppTypeHitsFeedResponse:
+      value:
+        value: 7
+        detail:
+          - value: 6
+            metadata:
+              id: APISubscription
+              type: API Subscription
+          - value: 1
+            metadata:
+              id: PackageSubscription
+              type: API Subscription
+    AppAccessTrendResponse:
+      value:
+        value: 85
+        detail:
+          - value: 38
+            detail:
+              - value: 14
+                metadata:
+                  key: '2021-03-18T09:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T12:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T15:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T18:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T21:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T00:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T03:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T06:00:00.000Z'
+              - value: 24
+                metadata:
+                  key: '2021-03-19T09:00:00.000Z'
+            metadata:
+              id: fa4d2f09-a8c4-45ce-bf1b-77375bcd7104
+              name: MyApp
+          - value: 28
+            detail:
+              - value: 14
+                metadata:
+                  key: '2021-03-22T10:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T13:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T16:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T19:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-22T22:00:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-23T01:00:00.000Z'
+              - value: 14
+                metadata:
+                  key: '2021-03-23T04:00:00.000Z'
+            metadata:
+              id: b8bccea3-0d94-41c7-861e-027e27a997d6
+              name: consumer2App2
+          - value: 12
+            detail:
+              - value: 4
+                metadata:
+                  key: '2021-03-19T10:18:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:18:30.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:19:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:19:30.000Z'
+              - value: 4
+                metadata:
+                  key: '2021-03-19T10:20:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:20:30.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:21:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-19T10:21:30.000Z'
+              - value: 4
+                metadata:
+                  key: '2021-03-19T10:22:00.000Z'
+            metadata:
+              id: b06ec36d-fc00-4ffd-a9d1-2510d69082ba
+              name: consumer2App
+          - value: 7
+            detail:
+              - value: 5
+                metadata:
+                  key: '2021-03-18T06:28:00.000Z'
+              - value: 1
+                metadata:
+                  key: '2021-03-18T06:38:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T06:48:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T06:58:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:08:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:18:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:28:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:38:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:48:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T07:58:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:08:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:18:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:28:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:38:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:48:00.000Z'
+              - value: 0
+                metadata:
+                  key: '2021-03-18T08:58:00.000Z'
+              - value: 1
+                metadata:
+                  key: '2021-03-18T09:08:00.000Z'
+            metadata:
+              name: UNKNOWN
+    SearchResponse:
+      value:
+        count: 1
+        result:
+          - id: null,
+            tenantId: null,
+            source: null,
+            creationDate: 1617012431810,
+            executor: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4,
+            eventType: TransactionalEvents,
+            eventSource: null,
+            apiId: d6376456-9d08-4a3e-b44d-7f40bb206d51,
+            apiName: HTTPBin_Format_API,
+            apiVersion: 1.0,
+            applicationId: 21236a05-dbd0-44cd-a62d-df16b7798892,
+            applicationIp: null,
+            applicationName: null,
+            operationName: /json,
+            responseCode: 200,
+            sessionId: eca7d15a1fe841a4a809e7348e1a7b80,
+            userAgent: null,
+            consumerId: cc4ef914-3e6b-439b-bed6-2fd63af3ead2,
+            consumerName: HTTPApp,
+            cachedResponse: null,
+            providerTime: 832,
+            totalSize: null,
+            totalTime: 911,
+            nativeHttpMethod: GET
+        _links:
+          _self: /rest/v1/analytics/ACCESS_LOGS?page=0
+    401:
+      value:
+        code: 401
+        message: "Invalid credentials"
+    403:
+      value:
+        code: 403
+        message: "Insufficient privileges"
