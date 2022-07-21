@@ -1,0 +1,696 @@
+openapi: 3.0.1
+info:
+  title: Portal Comments API
+  version: '10.11'
+  description: |
+    ## Overview
+    Comment management API helps to list or create comments in a topic.It is also used to upvote/downvote a comment or flag a comment in a topic. Depending on whether a post is your own or from another user, you can perform different actions.
+
+    ## Functionalities supported
+    ### Retrieving Comments
+      Comments can be retrieved by specifying a topic identifier. If the user has access to a topic stream then user will be able to retrieve the comments associated to the topic stream as well. The comments from the topic stream are retrieved in paginated formats with default page of size 10.
+
+    ### Updating / Deleting Comments
+      The user who post the comment(owner) can edit/delete his own comments. A user will not be allowed to modify another users comments.
+
+    ### Up/Down vote
+      The user who reads the comment can decide to up/down vote the comment based on its content.
+
+    ### Flagging
+      Flagging a comment tells that a comment requires moderator attention. A user can mark flag a comment based on its content if he/she feel inappropriate.
+
+    ## Authorization
+    - User having persmission to Read the topics can view, upvote, downvote or flag the comment.
+    - User having permission to Create the topics can post, update or delete the comment.
+    - User having Administrator permission can accept to flag the comment request.
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  '/topics/{id}/comments':
+    get:
+      tags:
+        - Comment
+      summary: Get the list of comments in a topic
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      description: |-
+        Endpoint to retrieve the list of comments in a topic.
+
+        *Endpoint can be accessed only by a user having permission to **READ** topic*
+      responses:
+        '200':
+          $ref: '#/components/responses/SearchResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Comment
+      summary: Create a comment in a topic
+      description: |-
+        Endpoint to post a comment under the topic.
+
+        *Endpoint can be accessed only by a user having permission to **CREATE** topic*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreation'
+            examples:
+              Comment:
+                $ref: '#/components/examples/CommentCreation'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{topicId}/comments/{id}':
+    get:
+      tags:
+        - Comment
+      summary: Get details of a paricular comment in a topic
+      description: |-
+        Endpoint to retrieve the particular comment in a particular topic.
+
+        *Endpoint can be accessed only by a user having permission to **READ** topic*
+      responses:
+        '200':
+          $ref: '#/components/responses/CommentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Comment
+      summary: Update an existing comment in a topic
+      description: |-
+        Endpoint to update the particular comment in a particular topic.
+
+        *Endpoint can be accessed only by a user having permission to **CREATE** topic*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreation'
+            examples:
+              Comment:
+                $ref: '#/components/examples/CommentCreation'
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Comment
+      summary: Delete a comment in a topic
+      description: |-
+        Endpoint to delete the particular comment in a particular topic.
+
+        *Endpoint can be accessed only by a user having permission to **CREATE** topic*
+      responses:
+        '204':
+          description: The response when the comment is successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for comment. Refers to the GUID for the comment.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+      - name: topicId
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{topicId}/comments/{id}/upvote':
+    put:
+      tags:
+        - Comment
+      summary: Upvote a particular comment in a topic
+      description: |-
+        Endpoint to upvote the particular comment in a particular topic. Re-invoking the same endpoint will undo the upvote
+
+        *Endpoint can be accessed only by a user having permission to **READ** topic*
+      responses:
+        '200':
+          $ref: '#/components/responses/UpvoteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identification for comment. Refers to the GUID for the comment. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+      - name: topicId
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{topicId}/comments/{id}/downvote':
+    put:
+      tags:
+        - Comment
+      summary: Downvote a particular comment in a topic
+      description: |-
+        Endpoint to downvote the particular comment in a particular topic. Re-invoking the same endpoint will undo the downvote
+
+        *Endpoint can be accessed only by a user having permission to **READ** topic*
+      responses:
+        '200':
+          $ref: '#/components/responses/DownVoteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for comment. Refers to the GUID for the comment.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+      - name: topicId
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{topicId}/comments/{id}/flag':
+    put:
+      tags:
+        - Comment
+      summary: Flag a comment in a topic
+      description: |-
+        Endpoint to flag the particular comment in a particular topic. Re-invoking the same endpoint will undo the flag
+
+        *Endpoint can be accessed only by a user having permission to **READ** topic*
+      responses:
+        '200':
+          $ref: '#/components/responses/FlagResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for comment. Refers to the GUID for the comment.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+      - name: topicId
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{topicId}/comments/{id}/flagged':
+    put:
+      tags:
+        - Comment
+      summary: Flag a comment in a topic by API Administrator
+      description: Flag a comment in a topic by API Administrator
+      responses:
+        '200':
+          $ref: '#/components/responses/FlaggedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for comment. Refers to the GUID for the comment.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+      - name: topicId
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic.
+          For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of a comment
+        topicId:
+          type: string
+          description: Identifier of a topic
+        content:
+          description: Content of the comment
+          type: object
+          properties:
+            type:
+              description: Type of comment
+              type: string
+              enum:
+                - link
+                - simple
+                - rich
+            value:
+              description: Comment text
+              type: string
+        upvotes:
+          description: List of users upvoted the comment
+          type: array
+          items:
+            type: string
+        downvotes:
+          description: List of users downvoted the comment
+          type: array
+          items:
+            type: string
+        flags:
+          description: List of users who flagged the comment
+          type: array
+          items:
+            type: string
+        flagged:
+          description: Whether given comment is flagged
+          type: boolean
+        owner:
+          description: Owner id of the comment
+          type: string
+        created:
+          type: string
+          description: Comment creation time
+        modified:
+          type: string
+          description: Comment modified time
+    CommentDTO:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            person:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Owner of the comment
+                firstName:
+                  type: string
+                  description: First name of the owner
+                lastName:
+                  type: string
+                  description: Last name of the owner
+                pictureUrl:
+                  type: string
+                  description: Profile pic url of the owner
+                email:
+                  type: string
+                  description: Email of the comment owner
+    CommentCreation:
+      type: object
+      properties:
+        topicId:
+          description: GUID of topic in which comment need to be posted
+          type: string
+        content:
+          type: object
+          properties:
+            type:
+              description: Type of the comment
+              enum:
+                - simple
+                - rich
+                - link
+              type: string
+            value:
+              type: string
+            metaData:
+              type: object
+              description: If comment type is link then the metadata about the link need to be shared
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+    CreatedResponse:
+      type: object
+      properties:
+        id:
+          description: Identifier of newly created comment
+          type: string
+        _self:
+          description: Self reference of newly created comment
+          type: string
+    UpdatedResponse:
+      type: object
+      properties:
+        code:
+          description: Response code
+          type: integer
+        message:
+          description: Response message
+          type: string
+    SearchResponse:
+      type: object
+      required:
+        - result
+        - count
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentDTO'
+        count:
+          description: Total number of comments retrieved
+          type: integer
+        _links:
+          type: object
+          description: Links of current and next page
+          required:
+            - _self
+          properties:
+            _self:
+              type: string
+              description: Link of current page
+            _next:
+              type: string
+              description: Link of next page
+    Summary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of a comment
+        name:
+          type: string
+        summary:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Response code
+        message:
+          type: string
+          description: Response message
+
+  examples:
+    SearchResponseComment:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 5efd843c-4ce5-493a-9749-c4cce0931888
+            modified: 1616649645858
+            created: 1616649645858
+            flagged: false
+            upvotes:
+              - 1d4a465a-3b9a-3b0e-b14d-ae3d08c3b1d9
+            topicId: 0bf86cac-5caa-4089-b9c6-48f7043e3ba1
+            person:
+              id: 1d4a465a-3b9a-3b0e-b14d-ae3d08c3b1d9
+              email: testgmail.com
+            content:
+              value: sample comment
+              type: rich
+        count: 1
+        _links:
+          _self: /rest/v1/topics/0bf86cac-5caa-4089-b9c6-48f7043e3ba1/comments?page=0
+    Comment:
+      value:
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        id: 7c59d3cc-3f14-4d65-aa89-47252a7dc377
+        flagged: false
+        modified: 1616649645858
+        created: 1616649645858
+        upvotes:
+          - 1d4a465a-3b9a-3b0e-b14d-ae3d08c3b1d9
+        topicId: 0bf86cac-5caa-4089-b9c6-48f7043e3ba1
+        content:
+          value: sample comment
+          type: rich
+    CommentCreation:
+      value:
+        content:
+          value: My comment
+          type: rich
+    CreatedResponse:
+      value:
+        id: 4ba06f7c-f4dd-4868-9d97-27134e102d00
+        _self: /rest/v1/topics/5efd843c-4ce5-493a-9749-c4cce0931888/comments/7c59d3cc-3f14-4d65-aa89-47252a7dc377
+    UpdatedResponse:
+      value:
+        code: 200
+        message: Comment is updated successfully
+    UpvoteExample:
+      value:
+        code: 200
+        message: Upvoted successfully
+    UndoUpvoteExample:
+      value:
+        code: 200
+        message: Undo Upvote successful
+    DownVoteExample:
+      value:
+        code: 200
+        message: Downvoted successfully
+    UndoDownVoteExample:
+      value:
+        code: 200
+        message: Undo downvote successful
+    FlagResponse:
+      value:
+        code: 200
+        message: Raised flag successfully
+    UnFlagResponse:
+      value:
+        code: 200
+        message: Unflag successful
+    FlagAcceptedResponse:
+      value:
+        code: 400
+        message: Flagged successfully
+    AlreadyFlaggedResponse:
+      value:
+        code: 400
+        message: Given entity is already flagged
+    401:
+      value:
+        code: 401
+        message: "Invalid credentials"
+    403:
+      value:
+        code: 403
+        message: "Insufficient privileges"
+    404_Comment:
+      value:
+        code: 404
+        message: "Unable to find the comment with id [74733475-a879-4693-b94f-22c9c946d433]"
+    404_Topic:
+      value:
+        code: 404
+        message: "Unable to find the topic with id [74733475-a879-4693-b94f-22c9c946d433]"
+
+  responses:
+    SearchResponse:
+      description: List of comments in a topic
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+          examples:
+            CommentList:
+              $ref: '#/components/examples/SearchResponseComment'
+    CreationResponse:
+      description: The response when comment is created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+          examples:
+            CreationResponse:
+              $ref: '#/components/examples/CreatedResponse'
+    CommentResponse:
+      description: The response when the requested comment is successfully retrived
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Comment'
+          examples:
+            CommentResponse:
+              $ref: '#/components/examples/Comment'
+    UpdatedResponse:
+      description: The response when the comment is successfully updated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            UpdationResponse:
+              $ref: '#/components/examples/UpdatedResponse'
+    UpvoteResponse:
+      description: The response when the comment is successfully upvoted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            UpvoteExample:
+              $ref: '#/components/examples/UpvoteExample'
+            UndoUpvoteExample:
+              $ref: '#/components/examples/UndoUpvoteExample'
+    DownVoteResponse:
+      description: The response when the comment is successfully downvoted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            DownVoteExample:
+              $ref: '#/components/examples/DownVoteExample'
+            UndoDownvoteExample:
+              $ref: '#/components/examples/UndoDownVoteExample'
+    FlagResponse:
+      description: The response when the comment is flagged/un-flagged successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            FlaggedResponse:
+              $ref: '#/components/examples/FlagResponse'
+            UnflaggedResponse:
+              $ref: '#/components/examples/UnFlagResponse'
+    FlaggedResponse:
+      description: The response when the comment is flagged by Administrator
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            FlaggedResponse:
+              $ref: '#/components/examples/FlagAcceptedResponse'
+            AlreadyFlaggedResponse:
+              $ref: '#/components/examples/AlreadyFlaggedResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404_Topic:
+              $ref: '#/components/examples/404_Topic'
+            404_Comment:
+              $ref: '#/components/examples/404_Comment'

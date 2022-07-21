@@ -4,7 +4,7 @@ Get elasticsearch service name
 {{- define "elasticsearch.getServiceName" -}}
 {{- $deploymentType:= lower .root.Values.deploymentType -}}
 {{- if eq $deploymentType "cluster" -}}
-{{- printf "devportal-es-svc-headless" -}}
+{{- printf "devportal-es-svc" -}}
 {{- else -}}
 {{- printf "devportal-es-svc" -}}
 {{- end -}}

@@ -1,0 +1,732 @@
+openapi: 3.0.1
+info:
+  title: Portal User Requests API
+  description: |
+    ## Overview:
+    User Requests are requests from consumers for creating/updating applications or subscriptions for accessing protected APIs
+    User requests for these objects might go through the approval process depending on the approval configuration and the requests are accepted/rejected based on the approver's decision.
+
+    ## Functionalities supported
+
+    Following is the list of User request types and their purpose
+
+    | Type | Purpose |
+    | ----------- | ----------- |
+    | APPLICATION_CREATION_REQUEST | Request for creating an application for an API |
+    | APPLICATION_UPDATE_REQUEST | Request for updating an existing application/subscription details like name, description and call back URL |
+    | APPLICATION_DELETION_REQUEST | Request for deleting an application |
+    | APPLICATION_API_REGISTRATION_REQUEST | Requrest for increasing the scope of an application by including more APIs in it |
+    | APPLICATION_API_DEREGISTRATION_REQUEST | Request for decreasing the scope of an application by removing one or more APIs from it |
+    | SUBSCRIPTION_CREATION_REQUEST | Request for subscribing to a plan/package |
+    | SUBSCRIPTION_REVOKE_REQUEST | Request for unsubscribing to a plan/package |
+
+    ## Authorization
+    - Users who owns an application can raise `APPLICATION_CREATION_REQUEST` for that application.
+    - User who owns the request can make `APPLICATION_UPDATE_REQUEST`,`APPLICATION_DELETION_REQUEST`,`APPLICATION_API_REGISTRATION_REQUEST`,`APPLICATION_API_DEREGISTRATION_REQUEST`,`SUBSCRIPTION_REVOKE_REQUEST`
+    - User who raised the request or Administrator users can view the log trace of the request
+    - Users with `API Administrator` role can view the pending requests and can retry a request
+
+  version: '10.11'
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  /requests:
+    get:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: Get all requests of given `type`
+      description: |+
+        Administrator user can see all user requests by giving `true` for the parameter `allusers`.
+
+        Other users can view theri owned requests
+      parameters:
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+        - name: type
+          in: query
+          description: Defines the type of the user request
+          required: true
+          schema:
+            type: string
+        - name: allusers
+          in: query
+          description: |+
+            Flag to retrieve all user requests in API Portal
+
+            Applicable only for Administrator users
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/UserRequestListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: Create a user request for an application or subscription
+      requestBody:
+        description: User request payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              APPLICATION_CREATION:
+                $ref: '#/components/examples/ApplicationCreationUserRequest'
+              SUBSCRIPTION_CREATION:
+                $ref: '#/components/examples/SubscriptionCreationUserRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/UserRequestCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /requests/pending:
+    get:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: Get the all the user requests which are pending of given `type`.
+      description: Administrator users alone can view all the pending requests
+      parameters:
+        - name: page
+          in: query
+          description: Defines the page number for the data
+          required: false
+          schema:
+            type: integer
+
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+
+        - name: type
+          in: query
+          description: Defines the type of the request
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/PendingUserRequestListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/requests/{id}':
+    get:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: Get the user request of the given id
+      responses:
+        '200':
+          $ref: '#/components/responses/UserRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: ''
+      description: |+
+        Delete a user request.
+
+        Only User requests that are in pending stage could be deleted
+      responses:
+        '204':
+          description: User request deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequestForRequestDeletion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Enter a valid user request id
+        required: true
+        schema:
+          type: string
+  '/requests/{id}/retry':
+    put:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      summary: Retry the user request that is pending
+      description: |+
+        Retry the user request that is pending.
+        Administrator users alone can retry a request
+      responses:
+        '200':
+          $ref: '#/components/responses/RetryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Enter a valid user request id
+        required: true
+        schema:
+          type: string
+      - name: state
+        in: query
+        description: Enter a valid state id
+        required: true
+        schema:
+          type: string
+  '/requests/{id}/trace':
+    get:
+      tags:
+        - User Request
+        - Application
+        - Subscription
+      description: Get the log trace of an user request
+      responses:
+        '200':
+          $ref: '#/components/responses/TraceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Enter a valid user request id
+        required: true
+        schema:
+          type: string
+components:
+  schemas:
+    Trace:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/UserRequest'
+        trace:
+          type: object
+          properties:
+            packageName:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditEventRepositoryObject'
+    UserRequestType:
+      type: string
+      enum:
+        - APPLICATION_CREATION_REQUEST
+        - APPLICATION_API_REGISTRATION_REQUEST
+        - APPLICATION_API_DEREGISTRATION_REQUEST
+        - APPLICATION_UPDATE_REQUEST
+        - SUBSCRIPTION_REVOKE_REQUEST
+        - SUBSCRIPTION_CREATION_REQUEST
+        - APPLICATION_DELETION_REQUEST
+    Pagination:
+      required:
+        - _self
+      type: object
+      properties:
+        _self:
+          description: Link of the current page
+          type: string
+        _next:
+          description: Link to the next page
+          type: string
+    EventType:
+      type: string
+      enum:
+        - API_PUBLISH_EVENT
+        - API_REPUBLISH_EVENT
+        - API_UN_PUBLISH_EVENT
+        - PROVIDER_PUBLISH_EVENT
+        - PROVIDER_REPUBLISH_EVENT
+        - PROVIDER_UNPUBLISH_EVENT
+        - SIGN_UP_EVENT
+        - APPLICATION_REQUEST_EVENT
+        - APPLICATION_CREATION_REQUEST_EVENT
+        - APPLICATION_REQUEST_APPROVED_EVENT
+        - APPLICATION_REQUEST_REJECTED_EVENT
+        - COMMUNITY_CREATION_EVENT
+        - COMMUNITY_DELETION_EVENT
+        - COMMUNITY_MEMBERSHIP_CHANGE_EVENT
+        - COMMUNITY_SCOPE_CHANGE_EVENT
+        - IN_APP_NOTIFICATION_EVENT
+        - EMAIL_NOTIFICATION_EVENT
+    UserRequestStatus:
+      type: string
+      description: Indicates the overall status of the user request.
+      enum:
+        - NEW
+        - APPROVAL_PENDING
+        - APPROVED
+        - WAITING_THIRDPARTY
+        - COMPLETED
+        - FAILED
+        - REJECTED
+    UserRequestCreated:
+      required:
+        - id
+        - _self
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of newly created request
+        _self:
+          description: Self reference of the newly created request
+          type: string
+    UserRequestList:
+      type: object
+      properties:
+        result:
+          description: Result list
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRequest'
+        _links:
+          description: Links of current and next page
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+          description: Total result count
+    Error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          description: Error code
+          type: integer
+          format: int32
+        message:
+          type: string
+          description: Error message
+
+    ResponseCode:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message
+    UserRequest:
+      type: object
+      properties:
+        owner:
+          type: string
+          description: Id of the user who created the request
+        application:
+          type: string
+          description: Id of the application
+        context:
+          type: object
+          description: |+
+            Has all details required for application creation.
+            e.g Name and description of the application, API and re-direct url.
+          additionalProperties:
+            type: string
+        id:
+          type: string
+          description: Unique identification of User Request. Refers to the GUID of the user request. For example `12896841-d85c-4a6c-88c9-632e927dee3d`
+        state:
+          type: object
+          description: Indicates the request state of each API/Subscription in the user request.
+          additionalProperties:
+            type: string
+        type:
+          $ref: '#/components/schemas/UserRequestType'
+        status:
+          $ref: '#/components/schemas/UserRequestStatus'
+    UpdationResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    AuditEventRepositoryObject:
+      allOf:
+        - $ref: '#/components/schemas/RepositoryObject'
+      type: object
+      properties:
+        parameters:
+          description: Event meta data
+          type: object
+          additionalProperties:
+            type: object
+          example:
+            api_name: AccuWeather
+        type:
+          description: Type of the event
+          type: object
+          enum:
+            - $ref: '#/components/schemas/EventType'
+
+    RepositoryObject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifier of the object
+        name:
+          type: string
+          description: Name of the object
+        summary:
+          type: string
+          description: Summary of the object
+        description:
+          type: string
+          description: Description of the object
+        owner:
+          type: string
+          description: Owner id of the object
+        modified:
+          type: string
+          format: 'yyyy-MM-dd HH:mm'
+          description: Modified date time
+        created:
+          type: string
+          format: 'yyyy-MM-dd HH:mm'
+          description: Created date time
+  responses:
+    BadRequest:
+      description: User provided data is not correct
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400:
+              $ref: '#/components/examples/400'
+
+    RetryResponse:
+      description: User provided data is not correct
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseCode'
+          examples:
+            200:
+              $ref: '#/components/examples/RetryResponseExample'
+
+    BadRequestForRequestDeletion:
+      description: User provided data is not correct
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400-Incorrect State:
+              $ref: '#/components/examples/400-IncorrectState'
+    UserRequestUpdatedResponse:
+      description: User request updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdationResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    UserRequestListResponse:
+      description: List of user requests fetched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequestList'
+          examples:
+            200-APPLICATION_CREATION_REQUEST:
+              $ref: '#/components/examples/ApplicationCreationUserRequestListExample'
+            200-SUBSCRIPTION_CREATION_REQUEST:
+              $ref: '#/components/examples/SubscriptionCreationUserRequestListExample'
+
+    PendingUserRequestListResponse:
+      description: List of pending user requests fetched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequestList'
+          examples:
+            200:
+              $ref: '#/components/examples/PendingUserRequestsListExample'
+
+    UserRequest:
+      description: User request fetched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequest'
+          examples:
+            200:
+              $ref: '#/components/examples/UserRequest'
+
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+    UserRequestCreatedResponse:
+      description: User request created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequestCreated'
+          examples:
+            201:
+              $ref: '#/components/examples/UserRequestCreatedExample'
+    TraceResponse:
+      description: Trace for the given user requests fetched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Trace'
+          examples:
+            200:
+              $ref: '#/components/examples/TraceExample'
+
+  examples:
+    '400':
+      value:
+        code: 400
+        message: User provided data is not correct
+    '400-IncorrectState':
+      value:
+        code: 400
+        message: Unable to delete the user request in status [COMPLETED]
+    '401':
+      value:
+        code: 401
+        message: Invalid credentials
+    '403':
+      value:
+        code: 403
+        message: Insufficient privileges
+    '404':
+      value:
+        code: 404
+        message: Unable to find the User Request
+    TraceExample:
+      value:
+        owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+        id: c94b8964-7177-4ed7-ac64-c0981499aba1
+        modified: '2021-03-26 10:14 UTC'
+        created: '2021-03-26 10:14 UTC'
+        type: SUBSCRIPTION_CREATION_REQUEST
+        status: WAITING_THIRDPARTY
+        application: d0d2ef67-d338-4662-a0cb-d1a69c5fac96
+        state:
+          543d37d9-a160-4785-8d29-f07666b04e5e: WAITING_THIRDPARTY
+        trace:
+          Gold package:
+            - id: 0a378fcc-0036-4394-9a5d-5c944e8b64a0
+              modified: '2021-03-26 14:12 UTC'
+              created: '2021-03-26 14:12 UTC'
+              type: USER_REQUEST_RETRY_EVENT
+            - id: 2b52f609-a633-4688-a445-411466718150
+              modified: '2021-03-26 14:11 UTC'
+              created: '2021-03-26 14:11 UTC'
+              type: USER_REQUEST_RETRY_EVENT
+            - id: 42d91d1a-0eee-44e4-9129-e9aa51351eeb
+              modified: '2021-03-26 13:55 UTC'
+              created: '2021-03-26 13:55 UTC'
+              type: USER_REQUEST_RETRY_EVENT
+            - id: 84b48602-c128-46d2-bf94-daf18af6dfe5
+              modified: '2021-03-26 10:14 UTC'
+              created: '2021-03-26 10:14 UTC'
+              type: GATEWAY_APPLICATION_CREATION_REQUEST_EVENT
+              status: INPROGRESS
+              reason: Delivered to gateway
+              code: '200'
+            - id: 27333bc9-d537-407b-913b-5ec86a450266
+              modified: '2021-03-26 10:14 UTC'
+              created: '2021-03-26 10:14 UTC'
+              type: APPLICATION_REQUEST_APPROVED_EVENT
+              status: COMPLETED
+            - id: 2b3e57a3-76f1-4126-8c65-0d5221b1c008
+              modified: '2021-03-26 10:14 UTC'
+              created: '2021-03-26 10:14 UTC'
+              type: APPLICATION_REQUEST_PENDING_EVENT
+              _link: /rest/v1/approvals/instance/f6118be5-007f-4382-af43-ce00cebb4033/trace
+            - id: 543d37d9-a160-4785-8d29-f07666b04e5e
+              modified: '2021-03-26 10:14 UTC'
+              created: '2021-03-26 10:14 UTC'
+              type: PORTAL_APPLICATION_CREATION_REQUEST_EVENT
+
+    NotificationList:
+      value:
+        count: 1
+        result:
+          - id: f3afe393-655b-4755-8c50-2ecd1c7379da
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            type: APPLICATION_CREATION_REQUEST
+            status: APPROVAL_PENDING
+            context: { }
+            application: fce645f8-fdeb-4b9a-8c33-6a4e75b36fdd
+            state: { }
+
+    ApplicationCreationUserRequest:
+      value:
+        context:
+          name: Petstore Application
+          description: This application is used for building petstore app
+          apis:
+            - 8294372b-5037-4501-b5da-95dad13fcf96
+          redirect_uris:
+            - http://localhost:8080
+        type: APPLICATION_CREATION_REQUEST
+
+    SubscriptionCreationUserRequest:
+      value:
+        context:
+          name: SubscriptionForGoldPlan
+          description: This application is used for building Hotel app
+          plan: 5f5947f7-ffb5-4534-bf44-360aceca9b24
+          package: 532e53ef-3b2a-45af-b859-2456dca1bb1f
+          redirect_uris:
+            - http://localhost:8080
+        type: SUBSCRIPTION_CREATION_REQUEST
+
+    SubscriptionCreationUserRequestListExample:
+      value:
+        result:
+          - owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+            id: 12896841-d85c-4a6c-88c9-632e927dee3d
+            type: SUBSCRIPTION_CREATION_REQUEST
+            status: WAITING_THIRDPARTY
+            application: 5097cc01-bd6d-443c-b356-0788af0666b7
+            state:
+              69c8ccc7-4ffa-4612-b097-8a27194bc63c: WAITING_THIRDPARTY
+        count: 1
+        _links:
+          _self: "/rest/v1/requests?type=SUBSCRIPTION_CREATION_REQUEST&page=0"
+
+    ApplicationCreationUserRequestListExample:
+      value:
+        result:
+          - owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+            id: b5fdeb4c-b177-4556-b4d8-eaac1ee2dd2a
+            type: APPLICATION_CREATION_REQUEST
+            status: COMPLETED
+            application: 2642db97-bfa5-4c4c-8452-dcbd0fda2d6a
+            state:
+              79fc987d-144b-47ad-9bd6-fdd6240d2e71: COMPLETED
+        count: 1
+        _links:
+          _self: "/rest/v1/requests?type=APPLICATION_CREATION_REQUEST&page=0"
+
+    PendingUserRequestsListExample:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: d8d9e6b8-6015-415b-89f1-e728b29ac1a4
+            type: APPLICATION_CREATION_REQUEST
+            status: APPROVAL_PENDING
+            application: 4ef059a7-a32d-434b-b501-19bd5b12dd3f
+            state:
+              d7621234-9e82-4b9f-9edb-efa6efbf6501: APPROVAL_PENDING
+        count: 1
+        _links:
+          _self: "/rest/v1/requests/pending?type=APPLICATION_CREATION_REQUEST&page=0"
+
+    RetryResponseExample:
+      value:
+        code: 200
+        message: User request retried successfully
+
+    UserRequest:
+      value:
+        owner: cdb82d56-4739-3164-9525-fbbd1d5dab56
+        id: b5fdeb4c-b177-4556-b4d8-eaac1ee2dd2a
+        type: APPLICATION_CREATION_REQUEST
+        status: COMPLETED
+        application: 2642db97-bfa5-4c4c-8452-dcbd0fda2d6a
+        state:
+          79fc987d-144b-47ad-9bd6-fdd6240d2e71: COMPLETED
+    UserRequestCreatedExample:
+      value:
+        id: c94b8964-7177-4ed7-ac64-c0981499aba1
+        _self: /rest/v1/userrequests/c94b8964-7177-4ed7-ac64-c0981499aba1

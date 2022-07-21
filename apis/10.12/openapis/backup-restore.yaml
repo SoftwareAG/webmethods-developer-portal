@@ -1,0 +1,428 @@
+openapi: 3.0.1
+info:
+  title: Portal Backup/Restore API
+  description: |
+    ## Overview
+      API Portal application specific data can be managed by tenant administrator using this API. Generally,
+      the tenant-specific data are categorized under different modules namely
+
+      * Core
+      * Collaboration
+      * Theme
+      * User
+      * Analytics
+
+    ## Core
+       -  This module covers Apis, Applications, Approvals, Configurations, Packages and Plans, Communities etc..
+
+    ## Collaboration
+       -  This module covers Topics, Comments, Notfication, Bookmarks and Favorites.
+
+    ## Theme
+      - This module covers various themes and its internal like Styles, Layouts, Pages, Components etc..
+
+    ## User
+      - This module covers Users and Groups and their Privileges and Configurations.
+
+    ## Analytics
+      - This module covers Metrics of various assets and Transactional events of an API which are used for analytics analysis
+
+
+    ## Accessibility
+      - Users with role `API Administrator` can perform all operations.
+
+    ## Supported functionalities
+      - Backup Data.
+      - Restore Data.
+      - Get the progress of Backup/Restore activity.
+        Backup/Restore activities are async in nature. The trigger backup/restore starts the activity and retruns back to the caller immediately with a handle response. Called can make use of this handle to further poll the progress of the backup/restore.
+      - Download the backed up Data.
+
+  version: "10.11"
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  /data/backup:
+    post:
+      tags:
+        - "Backup"
+      description: Backup tenant specific data for the requested modules
+      summary: Backup data
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackupRequest'
+            examples:
+              backup:
+                $ref: '#/components/examples/BackupRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/BackupRestoreResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  /data/restore:
+    post:
+      tags:
+        - "Restore"
+      description: |
+        Restore Data for the requested modules. This is a multi-part request with two parts.`files` part contains the binary file to be restored. `modules` part will contain the specific modules to be restored.
+      summary: Restore data
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RestoreRequest'
+            examples:
+              restore:
+                $ref: '#/components/examples/RestoreRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/BackupRestoreResponse'
+        "400":
+          $ref: '#/components/responses/LargerZipFile'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+  /data/status/{handle}/backup:
+    get:
+      tags:
+        - "Backup"
+      description: Download the completed backup file using the handle
+      summary: Download backup
+      responses:
+        "200":
+          description: Response when succesfully downloaded the backup file.
+        "404":
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+    parameters:
+      - name: handle
+        in: path
+        description: Unique handle id generated to track the progress of Backup/Restore activity
+        required: true
+        schema:
+          type: string
+
+  /data/status/{handle}:
+    get:
+      tags:
+        - "Backup"
+      description: Get the progress information for the supplied handle
+      summary: Retrieve progress
+      responses:
+        "200":
+          $ref: '#/components/responses/ProgressResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+
+    parameters:
+      - name: handle
+        in: path
+        description: Unique handle id of generated for tracking Backup/Restore activity. Usually be a uuid.
+        required: true
+        schema:
+          type: string
+components:
+  schemas:
+    Path:
+      type: object
+    BackupRestoreResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for progress. Refers to the GUID of the progress. For example `532e53ef-3b2a-45af-b859-2456dca1bb1f`
+        _self:
+          type: string
+          description: Link to fetch the progress detail.
+    Activity:
+      type: string
+      description: indicates the type of activity. Could be either `backup` or `restore` activity
+      enum:
+        - backup
+        - restore
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: array
+          items:
+            type: string
+    AsyncStatus:
+      type: string
+      description: Status of the Backup/Restore operation triggered asynchronously. Possible values are `PENDING`, `PARSING`, `INPROGRESS`, `COMPLETED`, `FAILED`
+      enum:
+        - PENDING
+        - PARSING
+        - INPROGRESS
+        - SUCCEEDED
+        - FAILED
+
+    RestoreRequest:
+      type: object
+      properties:
+        file:
+          description: backup file to be restored.
+          type: string
+          format: binary
+        modules:
+          description: Data belonging to different modules Core, Collaboration, Theme, User and Analytics.
+          type: array
+          items:
+            $ref: '#/components/schemas/BackupRestoreModule'
+
+    BackupRequest:
+      type: object
+      properties:
+        modules:
+          description: Data belonging to different modules Core, Collaboration, Theme, User and Analytics.
+          type: array
+          items:
+            $ref: '#/components/schemas/BackupRestoreModule'
+
+    BackupRestoreContext:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Needed in case, users/groups data need to be password protected.
+        activity:
+          $ref: '#/components/schemas/Activity'
+        fileSize:
+          description: Size of the Backup file.
+          type: integer
+          format: int32
+        handle:
+          description: Link to the progress.
+          type: string
+        workDir:
+          $ref: '#/components/schemas/Path'
+        fileLocation:
+          type: string
+        modules:
+          description: Data belonging to differnt modules Core, Collaboration, Theme, User and Analytics.
+          type: array
+          items:
+            $ref: '#/components/schemas/BackupRestoreModule'
+
+    BackupRestoreModule:
+      type: string
+      description: Data belonging to differnt modules Core, Collaboration, Theme, User and Analytics.
+      enum:
+        - Theme
+        - User
+        - Core
+        - Collaboration
+        - Analytics
+
+    ProgressResponse:
+      type: object
+      properties:
+        failures:
+          type: object
+          additionalProperties:
+            type: string
+        processedCount:
+          type: integer
+          description: No of processed steps.
+          format: int32
+        successes:
+          type: object
+          additionalProperties:
+            type: string
+        pendingCount:
+          type: integer
+          description: No of pending steps.
+          format: int32
+        fileSize:
+          type: integer
+          description: Size of the file that is backed up.
+          format: int32
+        skippedCount:
+          type: integer
+          description: No of skipped steps.
+          format: int32
+        fileLocation:
+          type: string
+        message:
+          type: string
+        status:
+          $ref: '#/components/schemas/AsyncStatus'
+        elapsedTime:
+          type: integer
+          description: The time taken for the Backup/Restore activity so far.
+          format: int32
+
+  responses:
+
+    401:
+      description: The request was unacceptable, due to invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    403:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+
+    LargerZipFile:
+      description: Zip file content is larger.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400:
+              $ref: '#/components/examples/LargerZipFile'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+
+    BackupRestoreResponse:
+      description: Backup/Restore Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackupRestoreResponse'
+          examples:
+            BackupRestoreExample:
+              $ref: '#/components/examples/BackupRestoreExample'
+
+    ProgressResponse:
+      description: Progress information of backup/restore activity
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProgressResponse'
+          examples:
+            ProgressResponseExample:
+              $ref: '#/components/examples/ProgressResponseExample'
+
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            ReadFailed:
+              $ref: '#/components/examples/ReadFailed'
+            ProgressMissing:
+              $ref: '#/components/examples/ProgressMissing'
+            BackupMissing:
+              $ref: '#/components/examples/BackupMissing'
+
+  examples:
+
+    "LargerZipFile":
+      value:
+        code: 400
+        message: The zip file content is larger than the maximum allowed size
+
+    "ReadFailed":
+      value:
+        code: 404
+        message: Unable to read the backup zip
+
+    "ProgressMissing":
+      value:
+        code: 404
+        message: Requested progress state not found
+
+    "BackupMissing":
+      value:
+        code: 404
+        message: Backup file not found. Please backup again to download
+
+    "401":
+      value:
+        code: 401
+        message: Invalid credentials
+
+    BackupRestoreExample:
+      value:
+        id: 4ba06f7c-f4dd-4868-9d97-27134e102d00
+        _self: /rest/v1/progress/4ba06f7c-f4dd-4868-9d97-27134e102d00
+
+    "403":
+      value:
+        code: 403
+        message: Insufficient privileges
+
+    BackupRequest:
+      value:
+        modules:
+          - Theme
+          - User
+          - Collaboration
+          - Core
+          - Analytics
+
+    RestoreRequest:
+      value: |
+        ------WebKitFormBoundaryOBl7vP7ee7F5cESA
+        Content-Disposition: form-data; name="modules"
+
+        User, Collaboration
+        ------WebKitFormBoundaryOBl7vP7ee7F5cESA
+        Content-Disposition: form-data; name="file"; filename="backup.zip"
+
+
+        ------WebKitFormBoundaryOBl7vP7ee7F5cESA--
+
+    ProgressResponseExample:
+      value:
+        processedCount: 25
+        pendingCount: 5
+        skippedCount: 0
+        status: INPROGRESS
+        fileSize: 5
+        elapsedTime: 5

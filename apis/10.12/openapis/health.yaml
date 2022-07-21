@@ -1,0 +1,381 @@
+openapi: 3.0.1
+info:
+  title: Portal Health API
+  description: |
+    ## Overview
+    Portal Health API can be used to get health, build details and other application related metrics
+
+    ## Functionalities supported
+      - Get the build information of the application.
+      - Get the metrics related to the application.
+      - Get environment properties of the application.
+      - Get health of application and its dependant components.
+      - K8s readiness and liveness probe support
+
+    ## Authorization
+      - Users with role `Administrator` can view the metrics and environment properties of the application.
+      - Any user can view the health and build information of the application.
+      - K8s probe can be accessesed without authentication
+
+  version: '10.11'
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  '/info':
+    get:
+      tags:
+        - info
+      summary: Get the build information
+      description: Get the build information of the application
+      responses:
+        '200':
+          $ref: '#/components/responses/Info'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/metrics':
+    get:
+      tags:
+        - metrics
+      summary: Get the application metrics
+      description: Get details of various application related metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Metrics'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/health':
+    get:
+      tags:
+        - health
+      summary: Get the application health details
+      description: Get information about application and the dependant components health
+      responses:
+        '200':
+          $ref: '#/components/responses/Health'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/health/liveness':
+    get:
+      tags:
+        - health
+      summary: Get the application liveness status
+      description: K8s deplyment can use this probe to check the application liveness.
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthLivenessReadiness'
+
+  '/health/readiness':
+    get:
+      tags:
+        - health
+      summary: Get the application readiness status
+      description: K8s deplyment can use this probe to check the application readiness.
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthLivenessReadiness'
+
+  '/env':
+    get:
+      tags:
+        - environment
+      summary: Get the environment details
+      description: Get information about application environment details
+      responses:
+        '200':
+          $ref: '#/components/responses/Environment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+
+
+components:
+  schemas:
+    Info:
+      type: object
+      properties:
+        build:
+          $ref: '#/components/schemas/BuildInfo'
+    BuildInfo:
+      type: object
+      properties:
+        Implementation-Vendor:
+          type: string
+        Implementation-Title:
+          type: string
+        Implementation-Version:
+          type: string
+        Build-Version-Major:
+          type: string
+        Build-Version-Minor:
+          type: string
+        Build-Version-Micro:
+          type: string
+        Build-Number:
+          type: string
+        Build-Revision:
+          type: string
+        Built-On:
+          type: string
+    Metrics:
+      type: array
+      items:
+        type: string
+    HealthLivenessReadiness:
+      type: object
+      properties:
+        status:
+          type: string
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        checks:
+          $ref: '#/components/schemas/HealthCheckList'
+    HealthCheckList:
+      type: object
+      properties:
+        DiskSpace:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        ElasticSearch:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        License:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        Provider:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        SMTP:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        Cluster:
+          $ref: '#/components/schemas/HealthCheckDetails'
+        ApplicationState:
+          $ref: '#/components/schemas/HealthCheckDetails'
+    HealthCheckDetails:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - green
+            - yellow
+            - red
+        details:
+          type: object
+          additionalProperties: true
+    Environment:
+      type: object
+      properties:
+        activeProfiles:
+          type: array
+          items:
+            type: string
+        propertySources:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              properties:
+                type: object
+                additionalProperties: true
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: array
+          description: Error detail list
+          items:
+            type: string
+
+  examples:
+    Info:
+      value:
+        build:
+          Implementation-Vendor: Software AG
+          Implementation-Title: webMethods API Portal
+          Implementation-Version: 10.11.0.0000-0001
+          Build-Version-Major: '10'
+          Build-Version-Minor: '11'
+          Build-Version-Micro: '0'
+          Build-Number: '0'
+          Build-Revision: '1410856'
+          Built-On: 2021-04-12 14:30
+    Metrics:
+      value:
+        names:
+          - http.server.requests
+          - jvm.buffer.count
+          - jvm.buffer.memory.used
+          - jvm.buffer.total.capacity
+          - jvm.classes.loaded
+          - jvm.classes.unloaded
+          - jvm.gc.live.data.size
+          - jvm.gc.max.data.size
+          - jvm.gc.memory.allocated
+          - jvm.gc.memory.promoted
+          - jvm.gc.pause
+          - jvm.memory.committed
+          - jvm.memory.max
+          - jvm.memory.used
+          - jvm.threads.daemon
+          - jvm.threads.live
+          - jvm.threads.peak
+          - jvm.threads.states
+          - log4j2.events
+          - process.cpu.usage
+          - process.start.time
+          - process.uptime
+          - spring.integration.channels
+          - spring.integration.handlers
+          - spring.integration.sources
+          - system.cpu.count
+          - system.cpu.usage
+          - tomcat.cache.access
+          - tomcat.cache.hit
+          - tomcat.global.error
+          - tomcat.global.received
+          - tomcat.global.request
+          - tomcat.global.request.max
+          - tomcat.global.sent
+          - tomcat.servlet.error
+          - tomcat.servlet.request
+          - tomcat.servlet.request.max
+          - tomcat.threads.busy
+          - tomcat.threads.config.max
+          - tomcat.threads.current
+    HealthLivenessReadiness:
+      value:
+        status: green
+    Health:
+      value:
+        status: yellow
+        checks:
+          DiskSpace:
+            status: green
+            details:
+              total: 1013310287872
+              free: 904146731008
+              threshold: 10485760
+              exists: true
+          ElasticSearch:
+            status: green
+            details:
+              cluster_name: elasticsearch
+              status: yellow
+              timed_out: false
+              number_of_nodes: 1
+              number_of_data_nodes: 1
+              active_primary_shards: 43
+              active_shards: 43
+              relocating_shards: 0
+              initializing_shards: 0
+              unassigned_shards: 43
+              delayed_unassigned_shards: 0
+              number_of_pending_tasks: 0
+              number_of_in_flight_fetch: 0
+              task_max_waiting_in_queue_millis: 0
+              active_shards_percent_as_number: 50
+          License:
+            status: red
+            details:
+              License:
+                licenses: [ ]
+          Provider:
+            status: green
+            details:
+              API Portal: green
+              Lean Portal Dev: green
+          SMTP:
+            status: red
+            details:
+              'Error: ': Host and port configuration is missing
+          Cluster:
+            status: green
+            details:
+              Cluster state: ACTIVE
+              Cluster number of nodes: 2
+              Cluster nodes hostnames: [127.0.0.1, 192.168.0.3]
+          ApplicationState:
+            status: green
+            details:
+              ApplicationState: NORMAL
+    Environment:
+      value:
+        activeProfiles:
+          - dev
+        propertySources:
+          - name: servletContextInitParams
+            properties:
+              contextConfigLocation:
+                value: "<NONE>"
+    401:
+      value:
+        code: 401
+        message: "Invalid credentials"
+
+  responses:
+    Info:
+      description: Application build information response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Info'
+          examples:
+            Info:
+              $ref: '#/components/examples/Info'
+    Metrics:
+      description: Application metrics response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Metrics'
+          examples:
+            Metrics:
+              $ref: '#/components/examples/Metrics'
+    HealthLivenessReadiness:
+      description: Application health liveness and readiness response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthLivenessReadiness'
+          examples:
+            Health:
+              $ref: '#/components/examples/HealthLivenessReadiness'
+    Health:
+      description: Application health response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Health'
+          examples:
+            Health:
+              $ref: '#/components/examples/Health'
+    Environment:
+      description: Application environment properties response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Environment'
+          examples:
+            Environment:
+              $ref: '#/components/examples/Environment'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
