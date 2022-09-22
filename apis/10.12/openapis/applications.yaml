@@ -134,7 +134,14 @@ paths:
         - Application
         - Subscription
         - User Request
-      summary: Update an application given by the id
+      summary: Update an application given by the id with its credetials from the external gateway provider
+      parameters:
+        - name: eventId
+          in: query
+          description: Unique identifier of the event that has been generated for the application request in developer portal.
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Application update payload
         content:
@@ -161,6 +168,16 @@ paths:
         - Subscription
         - User Request
       summary: Delete a particular application given by the id
+      parameters:
+        - name: force
+          in: query
+          description: Administartor can forcefully clean up particular application from the developer portal. It won't perform clean up on Gateway.
+          required: false
+          schema:
+            type: boolean
+            enum:
+              - true
+              - false
       responses:
         "204":
           description: Application deleted successfully
@@ -787,10 +804,10 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Application'
+            $ref: '#/components/schemas/ApplicationSharedUnsharedResponse'
           examples:
             200:
-              $ref: '#/components/examples/Application'
+              $ref: '#/components/examples/ApplicationUpdateResponse'
 
     NotFound:
       description: The specified resource was not found
@@ -871,6 +888,10 @@ components:
       value:
         code: 200
         message: Application is shared successfully
+    ApplicationUpdateResponse:
+      value:
+        code: 200
+        message: Application is updated successfully
     Application:
       value:
         name: Test Application

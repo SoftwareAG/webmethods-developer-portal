@@ -1,0 +1,1276 @@
+openapi: 3.0.1
+info:
+  title: Portal Configurations API
+  description: |-
+    ## Overview
+    Unified configuration API which helps to leverage different configurations of API Portal such as LDAP, MFA, OAUTH, Password Policy, SMTP, SAML etc.,
+    and manage email templates which are used by API Portal for sending email notifications on various events.
+
+    ## Functionalities supported
+    
+    ## LDAP
+      - LDAP Settings
+        - General configurations covering truststore/group import etc
+        
+      - LDAP Connection
+        - Configuration properties specific to a LDAP Connection.
+    
+    ## OAuth
+      - OAuth configuration settings
+        - General configurations including enabling OAuth, List of configured OAuth providers 
+        
+      - OAuth provider specific configuration setting
+        - Configuration properties specific to a OAuth provider which includes the api key/ secret.   
+    
+    ## MFA 
+      - Allows configuring MFA which includes the enabling MFA, configuring exclusion users, clock skew etc.
+    
+    ## Password policy
+      - Allows Configuring the password policy used for the system
+    
+    ## SAML
+      - Allows Configuring the single signon(SAML) configuration used by the system.
+
+    ## SMTP
+      - Allows Configuring the email server(SMTP) configuration used by the system.
+
+    ## Email Templates
+      - API Portal has below list of pre-defined email templates for sending email notifications on various events.
+      - By default notifications for all these templates are 'Enabled'
+      - Allows to enable/disable notification for a particualr template
+      - Allows to modify the subject and/or message for a particular template
+        Note: Only pre-defined variables/parameters/tokens in the message will be replaced/filled with its value by the system.
+        User can't introduce new variables/parameters/tokens.
+      - List of email templates are
+        - TOPIC_CREATED
+        - COMMENT_CREATED
+        - APPROVAL_PENDING
+        - APPROVAL_RESULT
+        - API_REPUBLISH
+        - API_UNPUBLISH
+        - PACKAGE_REPUBLISH
+        - PACKAGE_UNPUBLISH
+        - EMAIL_VERIFICATION
+        - WELCOME_EMAIL
+        - PASSWORD_RESET
+        - PASSWORD_RESET_REQUESTED
+        - PASSWORD_CHANGED
+        - OTP_REQUEST
+        - OTP_SECRET_CHANGE
+        - LICENSE_EXPIRED
+        - LICENSE_WILL_EXPIRE
+
+    
+    ## General
+      - Allows Configuring the general configuration like external DNS used by the system.
+
+    ## Application state
+      - Toggle the state of application between QUIESCE and NORMAL mode
+
+    ## Authorization
+    Users with role **Administrator** can only perform the configuration settings.
+
+      
+  version: '10.11'
+  
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+
+  '/configurations/smtp':
+    get:
+      tags:
+        - SMTP
+      summary: Retrieve email server configuration used in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/smtp_configuration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - SMTP
+      summary: Update email server configuration in the sytem
+      requestBody:
+        description: email server configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              password_policy:
+                $ref: '#/components/examples/smtp_configuration'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - SMTP
+      summary: Reset the email server configuration to default values 
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+
+  '/configurations/password_policy':
+    get:
+      tags:
+        - Configuration
+      summary: Retrieve password policy configuration in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/password_policy'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - Configuration
+      summary: Update password policy configuration in the sytem
+      requestBody:
+        description: multi-factor authentication configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              password_policy:
+                $ref: '#/components/examples/password_policy'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - Configuration
+      summary: Reset the password policy configuration to default values 
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+          
+          
+
+  '/configurations/saml':
+    get:
+      tags:
+        - SAML
+      summary: Retrieve Single Signon (SAML) configuration in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/saml_configuration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - SAML
+      summary: Update Single Signon (SAML) configuration in the sytem
+      requestBody:
+        description: Single Signon (SAML) configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              saml_configuration:
+                $ref: '#/components/examples/saml_configuration'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - SAML
+      summary: Reset the Single Signon (SAML) configuration to default values 
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'        
+
+  '/configurations/mfa':
+    get:
+      tags:
+        - MFA
+      summary: Retrieve multi-factor authentication configuration in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/mfa_configuration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - MFA
+      summary: Update multi-factor authentication configuration
+      requestBody:
+        description: multi-factor authentication configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              mfa_configuration:
+                $ref: '#/components/examples/mfa_configuration'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - MFA
+      summary: Remove multi-factor authentication configuration 
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+
+  '/configurations/oauth/{id}':
+    get:
+      tags:
+        - OAuth
+      parameters:
+        - name: "id"
+          in: "path"
+          description: unique identifier of the oauth provider.
+          required: true
+          schema:
+            type: string
+      summary: Retrieve specific OAuth provider configuration identified by given id
+      responses:
+        '200':
+          $ref: '#/components/responses/oauth_provider'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  
+  '/configurations/oauth':
+    get:
+      tags:
+        - OAuth
+      summary: Retrieve OAuth configuration in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/oauth_configuration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - OAuth
+      parameters:
+        - name: "id"
+          in: "query"
+          description: unique identifier of the OAuth provider
+          required: false
+          schema:
+            type: string
+      summary: Update OAuth provider configuration identified by the given query parameter
+      requestBody:
+        description: OAuth provider configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              oauth_provider:
+                $ref: '#/components/examples/oauth_provider'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - OAuth
+      summary: Remove OAuth provider configuration
+      parameters:
+        - name: "id"
+          in: "query"
+          description: unique identifier of the OAuth provider
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+
+  '/configurations/ldap_connection/{id}':
+    get:
+      tags:
+        - LDAP
+      parameters:
+        - name: "id"
+          in: "path"
+          description: unique identifier of the ldap connection
+          required: true
+          schema:
+            type: string
+      summary: Retrieve LDAP connection configuration identified by given id
+      responses:
+        '200':
+          $ref: '#/components/responses/ldap_connection'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  
+  '/configurations/ldap_connection':
+    put:
+      tags:
+        - LDAP
+      parameters:
+        - name: "id"
+          in: "query"
+          description: unique identifier of the ldap connection
+          required: false
+          schema:
+            type: string
+      summary: Update LDAP connection configuration identified by the given query parameter
+      requestBody:
+        description: LDAP connection configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              ldap_connection:
+                $ref: '#/components/examples/ldap_connection'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - LDAP
+      summary: Remove LDAP connection configuration
+      parameters:
+        - name: "id"
+          in: "query"
+          description: unique identifier of the ldap connection
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+  
+  '/configurations/ldap_settings':
+    get:
+      tags:
+        - LDAP
+      summary: Retrieve LDAP settings configuration
+      responses:
+        '200':
+          $ref: '#/components/responses/ldap_settings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - LDAP
+      summary: Update LDAP setting configuration
+      requestBody:
+        description: LDAP settings configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              ldap_settings:
+                $ref: '#/components/examples/ldap_settings'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - LDAP
+      summary: Remove LDAP settings configuration
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+  
+  '/configurations/umc_general':
+    get:
+      tags:
+        - Configuration
+      summary: Retrieve General configuration
+      responses:
+        '200':
+          $ref: '#/components/responses/general_configuration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags:
+        - Configuration
+      summary: Update General configuration
+      requestBody:
+        description: General configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              general_configuration:
+                $ref: '#/components/examples/general_configuration'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+    delete:
+      tags:
+        - Configuration
+      summary: Remove General configuration
+      responses:
+        '204':
+          description: Configuration is restored to default values
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+  
+        
+
+  /configurations:
+    post:
+      tags:
+        - Configuration
+      summary: Create configuration
+      requestBody:
+        description: Create configuration payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+            examples:
+              ldap_settings:
+                $ref: '#/components/examples/ldap_settings'
+              ldap_connection:
+                $ref: '#/components/examples/ldap_connection'  
+              oauth_provider:
+                $ref: '#/components/examples/oauth_provider' 
+              mfa_configuration:
+                $ref: '#/components/examples/mfa_configuration'  
+              password_policy:
+                $ref: '#/components/examples/password_policy'
+              saml_configuration:
+                $ref: '#/components/examples/saml_configuration'  
+              smtp_configuration:
+                $ref: '#/components/examples/smtp_configuration'  
+              umc_general:
+                $ref: '#/components/examples/general_configuration'  
+        
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+          
+
+  '/configurations/{category}':
+    get:
+      tags:
+        - Configuration
+      summary: Get Configuration by category
+      parameters:
+        - name: category
+          in: path
+          description: Configuration category
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/ConfigurationResponse'
+    put:
+      tags:
+        - Configuration
+      summary: Update Configuration by category
+      parameters:
+        - name: category
+          in: path
+          description: Configuration category
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/ConfigurationResponse'
+    delete:
+      tags:
+        - Configuration
+      summary: Delete Configuration by category
+      parameters:
+        - name: category
+          in: path
+          description: Configuration category
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Configuration is restored to default values
+
+  '/configurations/email-templates':
+    get:
+      tags:
+        - Email Template
+      summary: Lists summary of all email templates available in API Portal
+      responses:
+        '200':
+          $ref: '#/components/responses/EmailTemplateSummaryResponse'
+
+  '/configurations/email-templates/{templateId}':
+    get:
+      tags:
+        - Email Template
+      summary: Retrives the email template with given identifier
+      parameters:
+        - name: templateId
+          in: path
+          description: Unique identifier of the email template
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/EmailTemplateDetails'
+
+    put:
+      tags:
+        - Email Template
+      summary: Updates the email template of the given identifier
+      parameters:
+        - name: templateId
+          in: path
+          description: Unique identifier of the email template
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Email template payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateDetail'
+            examples:
+              WELCOME_EMAIL:
+                $ref: '#/components/examples/welcome_email_template'
+      responses:
+        '200':
+          $ref: '#/components/responses/CreatedResponse'
+
+  '/configurations/readonly':
+    post:
+      summary: Enable/Disable the read only mode of the application
+      parameters:
+        - name: enable
+          in: query
+          description: Flag to enable/disable the read only mode
+          required: true
+          schema:
+            type: string
+            default: false
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  schemas:
+    CreatedResponse:
+      required:
+        - id
+        - _self
+      type: object
+      properties:
+        id:
+          type: string
+        _self:
+          type: string
+    UpdatedResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    Configuration:
+      type: object
+      properties:
+        category:
+          type: string
+          description: category of the configuration object.
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfigurationEntry'
+    Error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: detailed error message if any.
+          
+    ConfigurationEntry:
+      type: object
+      properties:
+        value:
+          type: string
+          description: actual value
+        key:
+          type: string
+          description: specific key to be updated
+
+    EmailTemplates:
+      type: array
+      items:
+        $ref: '#/components/schemas/EmailTemplateSummary'
+
+    EmailTemplateSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: unique identifier of the email template
+        name:
+          type: string
+          description: name of the email template
+        summary:
+          type: string
+          description: detailed summary/usage of the email template
+
+    EmailTemplateDetail:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: tells wheather the email notification is enabled or not for the event to which this template pertain to.
+        message:
+          type: string
+          description: template of the email body
+        subject:
+          type: string
+          description: subject of the email
+        type:
+          type: string
+          description: content type of the email body. Possible values are 'text' and 'html'
+
+
+  responses:
+    CreatedResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+    UpdatedResponse:
+      description: Updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            UpdationResponse:
+              $ref: '#/components/examples/UpdatedResponse'
+    BadRequest:
+      description: 'The request was unacceptable, due to invalid payload'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    password_policy:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            password_policy:
+              $ref: '#/components/examples/password_policy'  
+    smtp_configuration:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            smtp_configuration:
+              $ref: '#/components/examples/smtp_configuration'             
+    saml_configuration:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            saml_configuration:
+              $ref: '#/components/examples/saml_configuration'   
+    mfa_configuration:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            mfa_configuration:
+              $ref: '#/components/examples/mfa_configuration'         
+    oauth_provider:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            oauth_provider:
+              $ref: '#/components/examples/oauth_provider' 
+    oauth_configuration:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            oauth_provider:
+              $ref: '#/components/examples/oauth_configuration'            
+    ldap_settings:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            ldap_settings:
+              $ref: '#/components/examples/ldap_settings'
+    ldap_connection:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            ldap_connection:
+              $ref: '#/components/examples/ldap_connection'          
+    general_configuration:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+          examples:
+            general_configuration:
+              $ref: '#/components/examples/general_configuration'          
+    
+    ConfigurationResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/Unauthorized'  
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/Forbidden'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    EmailTemplateSummaryResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailTemplates'
+
+    EmailTemplateDetails:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmailTemplateDetail'
+
+
+  examples:
+    ldap_connection:
+      value:
+        category: LDAP_CONNECTION
+        properties:
+          - key: LDAP_ATTRIB_DN
+            value: dn
+          - key: LDAP_ATTRIB_ROLENAME
+            value: cn
+          - key: LDAP_ATTRIB_GUID
+            value: objectGUID
+          - key: LDAP_ATTRIB_HASMEMBER
+            value: member
+          - key: LDAP_ATTRIB_MEMBEROF
+            value: memberOf
+          - key: LDAP_OBJECTCLASS_ATTRIB
+            value: objectClass
+          - key: LDAP_ATTRIB_EMAIL
+            value: mail
+          - key: LDAP_ATTRIB_FIRSTNAME
+            value: cn
+          - key: LDAP_ATTRIB_LASTNAME
+            value: sn
+          - key: LDAP_ATTRIB_USERNAME
+            value: uid
+          - key: LDAP_ATTRIB_PHONE
+            value: ''
+          - key: LDAP_ATTRIB_PICTURE
+            value: ''
+          - key: LDAP_URL2
+            value: 'ldap://xyz.eur.ad.sag:1389'
+          - key: LDAP_CONCURRENT_MAX
+            value: '0'
+          - key: LDAP_CONNECTION_ID
+            value: dap1
+          - key: LDAP_CONNECTION_NAME
+            value: myldap
+          - key: LDAP_FILTER_ROLE
+            value: ''
+          - key: LDAP_FILTER_PERSON
+            value: ''
+          - key: LDAP_CUSTOMATTRS_ROLE
+            value: ''
+          - key: LDAP_OBJECTCLASS_ROLE
+            value: groupOfNames
+          - key: LDAP_SEARCHPATH_ROLE
+            value: 'DC=example,DC=com'
+          - key: LDAP_PAGESIZE
+            value: '9999'
+          - key: LDAP_READ_TIMEOUT
+            value: '1800000'
+          - key: LDAP_RECURSION_DEPTH
+            value: '0'
+          - key: LDAP_REFERRAL
+            value: follow
+          - key: LDAP_SEARCHPATH
+            value: 'DC=example,DC=com'
+          - key: LDAP_PASSWORD
+            value: secret
+          - key: LDAP_USERNAME
+            value: 'uid=admin,ou=system'
+          - key: LDAP_TLS_CERTIFICATE_VERIFICATION
+            value: 'true'
+          - key: LDAP_TLS_HOST_VERIFICATION
+            value: 'false'
+          - key: LDAP_TLS_MODE
+            value: STARTTLS
+          - key: LDAP_USE_TLS
+            value: 'false'
+          - key: LDAP_TIMEOUT
+            value: '18000'
+          - key: LDAP_URL
+            value: 'ldap://xyz.eur.ad.sag:1389'
+          - key: LDAP_CUSTOMATTRS_PERSON
+            value: ''
+          - key: LDAP_OBJECTCLASS_USER
+            value: inetOrgPerson
+          - key: LDAP_SEARCHPATH_USER
+            value: 'DC=example,DC=com'
+    
+    oauth_configuration:
+      value:
+        - category: OAUTH
+          properties:
+            - key: OAUTH_PROVIDERS
+              value: 'GOOGLE,FACEBOOK,GITHUB,SOFTWAREAG,SAGCLOUD'
+            - key: OAUTH_ACTIVE
+              value: 'true'
+    oauth_provider:
+      value:
+        properties:
+          - key: OAUTH_API_KEYS
+            value: "***************1213"
+          - key: OAUTH_API_SECRETS
+            value: "*************232324"
+    mfa_configuration:
+      value:
+        - category: MFA
+          properties:
+            - key: NOTIFICATION_OTPREQUESTED_MESSAGE
+              value: ''
+            - key: NOTIFICATION_OTPSECRETCHANGED_ENABLED
+              value: 'true'
+            - key: MFA_ACTIVE
+              value: 'false'
+            - key: MFA_EXCLUDED_USERS
+              value: 'superuser,administrator'
+            - key: NOTIFICATION_OTPSECRETCHANGED_SUBJECT
+              value: ''
+            - key: MFA_CLOCK_SKEW
+              value: '1'
+            - key: NOTIFICATION_OTPREQUESTED_SUBJECT
+              value: ''
+            - key: NOTIFICATION_OTPSECRETCHANGED_MESSAGE
+              value: ''
+            - key: NOTIFICATION_OTPREQUESTED_ENABLED
+              value: 'true'
+    
+    smtp_configuration:
+      value:
+      - category: SMTP
+        properties:
+          - key: NOTIFICATION_HOST
+            value: '****.amazonaws.com'
+          - key: NOTIFICATION_USEAUTH
+            value: 'true'
+          - key: NOTIFICATION_USETLS
+            value: 'true'
+          - key: NOTIFICATION_SENDER
+            value: api-portal@webmethodscloud.com
+          - key: NOTIFICATION_TIMEOUT
+            value: '5000'
+          - key: NOTIFICATION_TLS_MODE
+            value: SSL
+          - key: NOTIFICATION_PORT
+            value: '465'
+          - key: NOTIFICATION_PASSWORD
+            value: '**********'
+          - key: NOTIFICATION_USERNAME
+            value: sender
+      
+    password_policy:
+      value:
+        - category: PASSWORD_POLICY
+          properties:
+            - key: PWD_UPPERCASE_ALLOWED
+              value: 'true'
+            - key: PWD_RESET_CONFIRMATION_ACTIVE
+              value: 'true'
+            - key: PWD_LOWERCASE_MIN
+              value: '0'
+            - key: PWD_SPECIAL_SET
+              value: '*$-+?_&=!%{}/'
+            - key: PWD_RESET_CONFIRMATION_TTL
+              value: '30'
+            - key: PWD_SPECIAL_ALLOWED
+              value: 'true'
+            - key: PWD_LENGTH_MIN
+              value: '4'
+            - key: PWD_CHANGE_FORCE_DIFFERENCE
+              value: 'false'
+            - key: PWD_NUMERIC_MIN
+              value: '0'
+            - key: PWD_CHANGE_FORCE_ON_FIRST_LOGIN
+              value: 'false'
+            - key: PWD_UPPERCASE_MIN
+              value: '0'
+            - key: PWD_NUMERIC_ALLOWED
+              value: 'true'
+            - key: PWD_SPECIAL_MIN
+              value: '0'
+            - key: PWD_LENGTH_MAX
+              value: '40'
+            - key: PWD_EXPIRY_DAYS
+              value: '1'
+            - key: PWD_CHANGE_FORCE_AFTER_RESET
+              value: 'false'
+            - key: PWD_EXPIRY_ACTIVE
+              value: 'false'
+        
+    ldap_settings:
+      value:
+        - category: LDAP_SETTINGS
+          properties:
+            - key: LDAP_SYNC_USE_DN_AS_GUID
+              value: 'false'
+            - key: LDAP_TRUSTSTORE_TYPE
+              value: JKS
+            - key: LDAP_TRUSTSTORE_PASSWORD
+              value: manage
+            - key: LDAP_URL
+              value: ''
+            - key: LDAP_SYNC_SKIPONFAULT
+              value: 'false'
+            - key: LDAP_ACTIVE
+              value: 'false'
+            - key: LDAP_USER_IMPORTONLOGIN
+              value: 'false'
+            - key: LDAP_AUTHENTICATION_ONLY
+              value: 'false'
+            - key: LDAP_SYNC_SEARCH_MEMBERS_BOTTOM_UP
+              value: 'true'
+            - key: LDAP_USER_IMPORTGROUPSONSYNC
+              value: 'false'
+            - key: LDAP_DEBUG
+              value: 'false'
+            - key: LDAP_CONCURRENT_TIMEOUT
+              value: '5'
+            - key: LDAP_CONNECTION_NAME
+              value: ''
+            - key: LDAP_ATTRIB_PAGING_ENABLED
+              value: 'true'
+            - key: LDAP_TRUSTSTORE_LOCATION
+              value: ''
+            - key: LDAP_CONNECTION_ID
+              value: ''
+            - key: LDAP_POOL_TIMEOUT
+              value: '180'
+            - key: LDAP_POOL_SIZE
+              value: '150'
+            - key: LDAP_ATTRIB_MEMBEROF_RESOLVEONLOGIN
+              value: 'false'
+            - key: LDAP_IMPORT_ENTITY_CACHE_SIZE
+              value: '35000'
+            - key: LDAP_GROUP_IMPORT_PARENT
+              value: 'false'
+            - key: LDAP_MULTI_ACTIVE
+              value: 'false'
+            - key: LDAP_CONNECTION_COUNT
+              value: '0'
+    saml_configuration:
+      value:
+        - category: SAML
+          properties:
+            - key: SAML_KEYSTORE_TYPE
+              value: JKS
+            - key: SAML_ASSERTION_AS_QUERYSTRING
+              value: ''
+            - key: SAML_ASSERTION_TIMEOFFSET
+              value: '0'
+            - key: SAML_SIGN_RESPONSE
+              value: 'false'
+            - key: SAML_ATTRIB_EMAIL
+              value: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'
+            - key: SAML_IDENTITY_PROVIDER_ID
+              value: 'https://sts.windows.net/***************/'
+            - key: SAML_ASSERTION_VALIDATION
+              value: 'false'
+            - key: SAML_ATTRIB_FNAME
+              value: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
+            - key: SAML_KEYSTORE_PASSWORD
+              value: "******"
+            - key: SAML_TRUSTSTORE_PASSWORD
+              value: manage
+            - key: SAML_ATTRIB_LNAME
+              value: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'
+            - key: SAML_ASSERTION_SUBDOMAINATTRIBUTE_NAME
+              value: ''
+            - key: SAML_ASSERTION_CONSUMER_URL
+              value: ''
+            - key: SAML_TENANT
+              value: default
+            - key: SAML_EXTENSION_ENABLE
+              value: 'false'
+            - key: SAML_ASSERTION_LNAMEATTRIBUTE_NAME
+              value: ''
+            - key: SAML_EXTENSION_FOR_ROLES
+              value: ''
+            - key: SAML_ASSERTION_LIFETIME
+              value: '10'
+            - key: SAML_SIGNATURE_ALGORITHM
+              value: RSAwithSHA1
+            - key: SAML_ATTRIB_PHONE
+              value: ''
+            - key: SAML_ASSERTION_FNAMEATTRIBUTE_NAME
+              value: ''
+            - key: SAML_SERVICE_PROVIDER_URLS
+              value: ''
+            - key: SAML_AUTH_CTX_COMPARISON
+              value: exact
+            - key: SAML_AUTH_NAMEID_FORMAT
+              value: unspecified
+            - key: SAML_KEYSTORE_ALIAS
+              value: ssos
+            - key: SAML_TRUSTSTORE_TYPE
+              value: JKS
+            - key: SAML_TRUSTSTORE_LOCATION
+              value: ''
+            - key: SAML_AUTH_CTX_CLASS_REFS
+              value: 'unspecified,PasswordProtectedTransport'
+            - key: SAML_BINDING
+              value: POST
+            - key: SAML_ASSERTION_COOKIE_DOMAIN
+              value: ''
+            - key: SAML_LOGIN_KEYWORD_NAME
+              value: uid
+            - key: SAML_SERVICE_PROVIDER_ID
+              value: UMCdaeapiportal06rh
+            - key: SAML_SIGN_ASSERTION
+              value: 'false'
+            - key: SAML_IDENTITY_PROVIDER_LOGOUT_URL
+              value: 'https://login.microsoftonline.com/*******/saml2'
+            - key: SAML_LOGIN_MODE_DN
+              value: 'false'
+            - key: SAML_KEYSTORE_LOCATION
+              value: ''
+            - key: SAML_ACTIVE
+              value: 'true'
+            - key: SAML_IDENTITY_PROVIDER_SSO_URL
+              value: 'https://login.microsoftonline.com/*******/saml2'
+            - key: SAML_SIGN_METADATA
+              value: 'false'
+            - key: SAML_ATTRIB_USERDEFINED
+              value: ''
+            - key: SAML_TRUSTSTORE_ALIAS
+              value: ssos
+            - key: SAML_CREATE_USER_IF_MISSING
+              value: 'true'
+            - key: SAML_SIGN_REQUEST
+              value: 'false'
+            - key: SAML_ATTRIB_MEMBEROF
+              value: ''
+            - key: SAML_ASSERTION_ROLEATTRIBUTE_NAME
+              value: ''
+            - key: SAML_ASSERTION_EMAILATTRIBUTE_NAME
+              value: ''
+            - key: SAML_LOGIN_MODE_KEYWORD
+              value: 'false'
+    general_configuration:
+      value:
+        - category: UMC_GENERAL
+          properties:
+            - key: KERBEROS_ALLOW_LOCAL_USERS
+              value: 'false'
+            - key: KERBEROS_KEYTAB
+              value: ''
+            - key: LOADBALANCER_URL_HTTPS
+              value: ''
+            - key: KERBEROS_REALM
+              value: ''
+            - key: KERBEROS_KDC
+              value: ''
+            - key: LOADBALANCER_URL
+              value: 'https://devportal.saglive.com'
+            - key: LOADBALANCER_URL_HTTP
+              value: ''
+            - key: KERBEROS_DEBUG
+              value: 'false'
+            - key: KERBEROS_CONFIGFILE
+              value: ''
+            - key: KERBEROS_TENANT
+              value: default
+            - key: KERBEROS_SPN
+              value: ''
+            - key: KERBEROS_ACTIVE
+              value: 'false'
+            - key: KERBEROS_VALIDATE_USERNAME
+              value: 'false'
+
+
+    welcome_email_template:
+      value:
+        enabled: true
+        message: "<html>\r\n\r\n<br>\r\nHello,\r\n\r\n<br><br>\r\n\r\nYour user account was
+          activated.\r\n\r\n<br>\r\nTenant: ${tenant}\r\n<br>\r\nUser name: ${recipient.name}\r\n\r\n<br><br>\r\n\r\nBest
+          Regards,<br>\r\nAPI Portal Team\r\n<br><br>\r\n\r\n*** This notification was sent
+          automatically. Do not reply to this email.***\r\n<br>\r\n</html>\r\n"
+        subject: Welcome to API Portal
+        type: html
+
+    CreatedResponse:
+      value:
+        id: SMTP
+        _self: /rest/v1/configurations/SMTP
+
+    UpdatedEmailTemplateResponse:
+      value:
+        id: <id of the email template>
+        _self: /portal/rest/v1/configurations/email-templates/<id of the email template>
+
+    BadRequest:
+      value:
+        code: 400
+        message: The payload given is invalid
+    Unauthorized:
+      value:
+        code: 401
+        message: Invalid credentials
+    Forbidden:
+      value:
+        code: 403
+        message: Insufficient privileges
+    NotFound:
+      value:
+        code: 404
+        message: Unable to find the Configuration
+    UpdatedResponse:
+      value:
+        code: 200
+        message: Application state is updated successfully

@@ -1,0 +1,1463 @@
+openapi: 3.0.1
+info:
+  title: Portal Approval API
+  description: |-
+    ## Overview
+    API to define a multi-level approval process which can be used to onboard a user, application or subscription.
+
+    ## Functionalities supported
+
+    ### Approval Workflow CRUD
+
+    Depending on the security requirements the API Portal Administrator can create multiple approval workflows. The single approval workflow can contain multiple approval step. The approval step can be of following combinations,
+
+    | Approver type | Approval mode |
+    | ----------- | ----------- |
+    | Group | Anyone/Everyone |
+    | User | Anyone/Everyone |
+    ---
+
+    ### Approval Workflow Assignment
+
+    The API Portal Administrator can assign one approval workflow for each of the following asset onboarding,
+    - User onboarding
+    - Application/Subscription onboarding / Registering API
+    ---
+    ### Approval Request Handling
+
+    Based on the approval workflow assignment the approval request will be generated if corresponding onboarding process initiated. By using this API following opertaion can be performed,
+    - List available pending approval requests
+    - Approve/Reject approval request
+    ---
+
+    ## Authorization
+    - Users with role **Administrator** can perform Create/Update/Delete of Approval work flow creation and Assign/Unassign Approval work flow for User/Application/Subscription on-boarding
+    - All users can perform approve/reject on the approval requests they have received.
+
+
+  version: '10.11'
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  /approvals:
+    get:
+      tags:
+        - Approval Workflow
+      summary: Retrieve the list of configured approval flows
+      description: |-
+        Endpoint to retrieve the list of all approval workflows configured in API Portal.
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowSearchResponse'
+              examples:
+                ApprovalFlowResponse:
+                  $ref: '#/components/examples/ApprovalFlowSearchResponse'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+
+    post:
+      tags:
+        - Approval Workflow
+      summary: Create a new approval workflow
+      description: |-
+        Endpoint to create a new approval workflow in API Portal
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowTemplate'
+            examples:
+              Create a new flow with a user as approver:
+                value:
+                  name: New Flow
+                  description: Flow with multilevel approval
+                  steps:
+                    - approver:
+                        - id: 9ab209d6-6a9b-3225-8d7f-56cc4b3b125d
+                          name: "Administrator"
+                      approver_type: USER
+                      mode: EVERYONE
+                      notification:
+                        pending:
+                          subject: Approval request pending
+                          message: Hello ${approver.name},  A request by ${requestor.name} to become a registered user needs your review and approval. You can click the link to approve http://localhost:4200/rest/v/approvals/${approval.request.id}/approve  or click the link to reject http://localhost:4200/rest/v/approvals/${approval.request.id}/reject  Best Regards,API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+                        result:
+                          subject: Result of registration request
+                          message: Hello ${approver.name}, A registration request by ${requestor.name} has been ${approval.result}  Best Regards, API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+
+              Create a new flow with group as approver group:
+                value:
+                  name: New Flow
+                  description: Flow with multilevel approval
+                  steps:
+                    - approver:
+                        - id: 2bc699d6-6a9b-3225-8d7f-56cc4b3b125d
+                          name: API Provider
+                      approver_type: GROUP
+                      mode: EVERYONE
+                      notification:
+                        pending:
+                          subject: Approval request pending
+                          message: Hello ${approver.name},  A request by ${requestor.name} to become a registered user needs your review and approval. You can click the link to approve http://localhost:4200/rest/v/approvals/${approval.request.id}/approve  or click the link to reject http://localhost:4200/rest/v/approvals/${approval.request.id}/reject  Best Regards,API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+                        result:
+                          subject: Result of registration request
+                          message: Hello ${approver.name}, A registration request by ${requestor.name} has been ${approval.result}  Best Regards, API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreationResponse'
+              example:
+                id: 0392ce93-49e5-4302-9e84-7ba53431ff69
+                _self: /rest/v1/approvals/0392ce93-49e5-4302-9e84-7ba53431ff69
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortalResponse'
+              examples:
+                400:
+                  $ref: '#/components/examples/PortalResponseError'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /approvals/{id}:
+    get:
+      tags:
+        - Approval Workflow
+      summary: Retrieve the approval flow by Id
+      description: |-
+        Endpoint to obtain details of particular approval workflow based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowTemplate'
+              examples:
+                ApprovalFlowResponse:
+                  $ref: '#/components/examples/ApprovalFlow'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval Flow. Refers to the GUID of the approval flow.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+
+    put:
+      tags:
+        - Approval Workflow
+      summary: Update the approval flow by Id
+      description: |-
+        Endpoint to update details of particular approval workflow based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowTemplate'
+            examples:
+              Update:
+                $ref: '#/components/examples/FlowResponse'
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowTemplate'
+              examples:
+                200:
+                  $ref: '#/components/examples/FlowResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortalResponse'
+              examples:
+                400:
+                  $ref: '#/components/examples/PortalResponseError'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval Flow. Refers to the GUID of the approval flow.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+
+    delete:
+      tags:
+        - Approval Workflow
+      summary: Delete the approval flow by Id
+      description:  |-
+        Endpoint to delete the particular approval workflow based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      responses:
+        '204':
+          description: OK
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval Flow. Refers to the GUID of the approval flow.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+
+  /approval/policy:
+    get:
+      tags:
+        - Approval Workflow
+      summary: Retreieve the approval workflow assigned to User onboarding / Application onboarding
+      description: |-
+        Endpoint to retrieve the approval workflow policy assigned to onboarding process. The onboarding process is categorized into two parts
+        - User onboarding
+        - Application onboarding
+          - Application creation
+          - Subscription
+          - Registering API
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      parameters:
+        - name: type
+          in: query
+          description: |-
+            Optional parameter. Defines the onboarding type that need to be queryed. The supported values are
+            - USER_CREATION
+            - APPLICATION_CREATION
+            - APPLICATION_API_REGISTRATION
+          required: false
+          schema:
+            type: string
+            default: USER_CREATION
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalPolicy'
+              examples:
+                ApprovalPolicy:
+                  $ref: '#/components/examples/ApprovalPolicy'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+
+    put:
+      tags:
+        - Approval Workflow
+      summary: Assign the approval workflow for User onboarding / Application onboarding
+      description: |-
+        Endpoint to assign the approval workflow policy for onboarding process. The onboarding process is categorized into two parts
+        - User onboarding
+        - Application onboarding
+          - Application creation
+          - Subscription
+          - Registering API
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      parameters:
+        - name: type
+          in: query
+          description: |-
+            Optional parameter. Defines the onboarding type for which approval workflow need to be set. The supported values are
+            - USER_CREATION
+            - APPLICATION_CREATION
+          required: false
+          schema:
+            type: string
+            default: APPLICATION_CREATION
+            enum:
+              - APPLICATION_CREATION
+              - USER_CREATION
+        - name: enableForRegistration
+          in: query
+          description: |-
+            Optional parameter. Defines whether the approval workflow need to be set for API Registeration also.
+          required: false
+          schema:
+            type: boolean
+            default: false
+            enum:
+              - false
+              - true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalPolicy'
+            examples:
+              ApprovalPolicy:
+                $ref: '#/components/examples/ApprovalPolicy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedResponse'
+              examples:
+                200:
+                  $ref: '#/components/examples/CreatedResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortalResponse'
+              examples:
+                400:
+                  $ref: '#/components/examples/PortalResponseError'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /approvals/request:
+    get:
+      tags:
+        - Approval Worflow
+      summary: Retrieve the list of pending approval requests
+      description: |-
+        Endpoint to retrieve the list of all pending approvals requests.
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestSearchResponse'
+              examples:
+                ApprovalFlowResponse:
+                  $ref: '#/components/examples/ApprovalRequestSearchResponse'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters: []
+
+  /approvals/request/{id}:
+    get:
+      tags:
+        - Approval Worflow
+      summary: Retrieve the pending approval request by Id
+      description: |-
+        Endpoint to obtain details of particular approval request based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request READ** permission*
+      responses:
+        '200':
+          $ref: '#/components/responses/ApprovalRequest'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+
+  /approvals/request/{id}/approve:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Approve a particular approval request
+      description:  |-
+        Endpoint to approve particular approval request based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      responses:
+        '200':
+          description: 'No content'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Unique Identification for Approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      - name: comments
+        in: query
+        required: false
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Approver can add comments while approving the request. The default value is empty
+
+  /approvals/request/external/{id}/approve:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Approve a particular external approval request
+      description:  |-
+        Endpoint to approve particular external approval request based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      responses:
+        '200':
+          description: 'No content'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Unique Identification for Approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      - name: comments
+        in: query
+        required: false
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Approver can add comments while approving the request. The default value is empty
+
+  /approvals/request/approve:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Approve a set of approval requests
+      description:  |-
+        Endpoint to approve a set of approval requests based on IDs
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      parameters:
+        - name: comments
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Approver can add comments while approving the request. The default value is empty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example: '["dce350d8-72be-4503-acb1-1e0e699abbe1", "dc8aaac3-f7ee-42f4-8474-1e85678942db"]'
+      responses:
+        '200':
+          description: No content
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /approvals/request/{id}/reject:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Reject a particular approval request
+      description:  |-
+        Endpoint to reject particular approval request based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      responses:
+        '200':
+          description: 'No content'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Unique Identification for Approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      - name: comments
+        in: query
+        required: false
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Approver can add comments while rejecting the request. The default value is empty
+
+  /approvals/request/external/{id}/reject:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Reject a particular external approval request
+      description:  |-
+        Endpoint to reject a particular external approval request based on ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      responses:
+        '200':
+          description: 'No content'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Unique Identification for Approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      - name: comments
+        in: query
+        required: false
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Approver can add comments while rejecting the request. The default value is empty
+
+  /approvals/request/reject:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Reject a set of approval requests
+      description:  |-
+        Endpoint to reject a set of approval requests based on IDs
+
+        *Endpoint can be accessed only by a user having **Administrator** role or **Approval Request UPDATE** permission*
+      parameters:
+        - name: comments
+          in: query
+          required: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Approver can add comments while rejecting the request. The default value is empty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            example: '["dce350d8-72be-4503-acb1-1e0e699abbe1", "dc8aaac3-f7ee-42f4-8474-1e85678942db"]'
+      responses:
+        '200':
+          description: No content
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+
+  /approvals/instance:
+    get:
+      summary: Retrieve all approval request instance in API Portal by status
+      description:  |-
+        Endpoint to retrieve the list of all approval request flow records in API Portal. API Portal records all the steps of approval request for audit purpose this endpoint can be used to retrieve it based on status.
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowInstanceSearchResponse'
+              examples:
+                FlowInstanceSearchResponse:
+                  $ref: '#/components/examples/FlowInstanceSearchResponse'
+        '403':
+          $ref: '#/components/responses/403'
+        '401':
+          $ref: '#/components/responses/401'
+      tags:
+        - Approval Worflow
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: status of the approval request
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+            enum:
+              - NOT_STARTED
+              - STOPPED
+              - SUSPENDED
+              - COMPLETED
+              - SKIPPED
+              - FLOW_COMPLETED
+              - ALL
+              - FAILED
+
+  /approvals/instance/step/{id}/request:
+    put:
+      tags:
+        - Approval Worflow
+      summary: Retrieve approval requests of the given step Id
+      description:  |-
+        Endpoint to get approval request based on the step ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestSearchResponse'
+              examples:
+                ApprovalRequestSearchResponse:
+                  $ref: '#/components/examples/ApprovalRequestSearchResponse'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+        description: Unique Identification for Approval step. Refers to the GUID of the approval step.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+
+  /approvals/instance/{id}/trace:
+    get:
+      tags:
+        - Approval Worflow
+      summary: Retrieve approval request trace logs
+      description: |-
+        Endpoint to get approval instance trace logs based on the instance ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval instance. Refers to the GUID of the approval instance.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      responses:
+        200:
+          $ref: '#/components/responses/ApprovalTrace'
+        401:
+          $ref: '#/components/responses/401'
+        403:
+          $ref: '#/components/responses/403'
+        404:
+          $ref: '#/components/responses/404'
+
+  /approvals/instance/{id}/logs:
+    get:
+      tags:
+        - Approval Worflow
+      summary: Retrieve approval request logs
+      description: |-
+        Endpoint to get approval instance logs based on the instance ID
+
+        *Endpoint can be accessed only by a user having **Administrator** role*
+      parameters:
+        - name: id
+          in: path
+          required: true
+          allowEmptyValue: false
+          schema:
+            type: string
+          description: Unique Identification for Approval instance. Refers to the GUID of the approval instance.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+      responses:
+        200:
+          $ref: '#/components/responses/ApprovalTrace'
+        401:
+          $ref: '#/components/responses/401'
+        403:
+          $ref: '#/components/responses/403'
+        404:
+          $ref: '#/components/responses/404'
+
+components:
+  schemas:
+    CreatedResponse:
+      required:
+        - id
+        - _self
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for policy.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        _self:
+          type: string
+          description: link to the onboarding type policy
+    ApprovalRequestSearchResponse:
+      type: object
+      properties:
+        result:
+          description: List of approval workflows
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalRequest'
+        count:
+          description: Number of approval workflows
+          type: integer
+        _links:
+          description: List of available pagination links
+          type: object
+          additionalProperties:
+            type: string
+    FlowInstanceSearchResponse:
+      type: object
+      properties:
+        result:
+          description: List of approval request flow
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowInstanceTemplate'
+        count:
+          description: Number of approval request flow
+          type: integer
+        _links:
+          description: List of available pagination links
+          type: object
+          additionalProperties:
+            type: string
+    FlowSearchResponse:
+      type: object
+      properties:
+        result:
+          description: List of approval workflows
+          type: array
+          items:
+            $ref: '#/components/schemas/ListFlowTemplate'
+        count:
+          description: Number of approval workflows
+          type: integer
+        _links:
+          description: List of available pagination links
+          type: object
+          additionalProperties:
+            type: string
+    ApprovalRequest:
+      type: object
+      properties:
+        owner:
+          type: string
+          description: owner of the approval workflow
+        id:
+          type: string
+          description: Unique identification for approval request. Refers to the GUID of the approval request.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        flowId:
+          type: string
+          description: Unique Id of flow , approval request belongs to
+        stepId:
+          type: string
+          description: Id of a step, approval request belongs to
+        groupId:
+          type: string
+          description: Id of a group
+        status:
+          type: string
+          description: Status of approval request
+          enum:
+            - PENDING
+            - APPROVED
+            - SKIPPED
+            - REJECTED
+        type:
+          type: string
+          description: Onboarding type
+          enum:
+            - APPLICATION_CREATION_REQUEST
+            - USER_ONBOARDING
+            - APPLICATION_SCOPE_INCREASE_REQUEST
+        contextId:
+          type: string
+          description: GUID of an application or user for which approval request has been raised.
+        contextData:
+          type: object
+          properties:
+            firstName:
+              type: string
+            lastName:
+              type: string
+            appType:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+    RequestTrace:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: '#/components/schemas/RequestByStep'
+    RequestByStep:
+      type: object
+      properties:
+        flowId:
+          type: string
+          description: 'Unique Id of flow , approval request belongs to'
+        stepId:
+          type: string
+          description: 'Id of a step, approval request belongs to'
+        status:
+          type: string
+          description: Status of approval request
+          enum:
+            - PENDING
+            - APPROVED
+            - SKIPPED
+            - REJECTED
+        comments:
+          type: string
+        approver:
+          $ref: '#/components/schemas/ApproverInfo'
+    ApproverInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        pictureUrl:
+          type: string
+    ApprovalPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: GUID of approval workflow assignment
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+
+    Policy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: GUID of approval workflow policy
+        type:
+          type: string
+          description: Type of approval
+          enum:
+            - INTERNAL_APPROVAL
+            - EXTERNAL_APPROVAL
+        parameters:
+          type: object
+          properties:
+            flow_id:
+              type: string
+              description: GUID of approval workflow
+            flow_name:
+              type: string
+              description: Approval workflow configuration name
+    Step:
+      title: Step
+      type: object
+      description: Step instance
+      properties:
+        id:
+          type: string
+          description: Unique representation of Step
+        executor:
+          type: string
+        staus:
+          type: string
+        configuration:
+          type: object
+          description: Step configuration as Key value pair
+          properties:
+            key:
+              type: string
+            value:
+              type: string
+        nextSteps:
+          type: object
+          description: Next step configuration as Key value pair
+          properties:
+            key:
+              type: string
+            value:
+              $ref: '#/components/schemas/Step'
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+    PortalResponse:
+      type: object
+      title: ''
+      properties:
+        code:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: array
+          description: Array of failed validation errors
+          items:
+            type: string
+    FlowTemplate:
+      title: FlowTemplate
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique representation of flow object
+        name:
+          type: string
+          description: An Unique name for the identification of approval flow
+        description:
+          type: string
+          description: Short description on approval flow
+        steps:
+          type: array
+          description: Approval flow can have multiple levels.Steps are created in order as provided
+          items:
+            $ref: '#/components/schemas/StepTemplate'
+      required:
+        - name
+        - description
+    ListFlowTemplate:
+      title: FlowTemplate
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique representation of flow object
+        name:
+          type: string
+          description: An Unique name for the identification of approval flow
+        description:
+          type: string
+          description: Short description on approval flow
+      required:
+        - name
+        - description
+    FlowInstanceTemplate:
+      title: FlowInstanceTemplate
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique representation of flow object
+        status:
+          type: string
+          description: Status of the approval request instance flow
+          enum:
+            - NOT_STARTED
+            - STOPPED
+            - SUSPENDED
+            - COMPLETED
+            - SKIPPED
+            - FLOW_COMPLETED
+            - ALL
+            - FAILED
+        contextId:
+          type: string
+        type:
+          type: string
+          description: Type of approval request
+          enum:
+            - USER_ONBOARDING
+            - APPLICATION_CREATION_REQUEST
+            - APPLICATION_SCOPE_INCREASE_REQUEST
+        root:
+          type: object
+          description: Flow step information
+          properties:
+            id:
+              type: string
+              description: Unique representation of flow step object
+            executor:
+              type: string
+              description: Type of request
+              enum:
+                - APPLICATION_REQUEST_PENDING
+                - USER_REQUEST_PENDING
+            status:
+              type: string
+              description: Status of the approval flow step
+              enum:
+                - NOT_STARTED
+                - STOPPED
+                - SUSPENDED
+                - COMPLETED
+                - SKIPPED
+                - FLOW_COMPLETED
+                - ALL
+                - FAILED
+            created:
+              type: string
+              description: Approval flow step created time
+            modified:
+              type: string
+              description: Approval flow step modified time
+            configuration:
+              type: object
+            nextSteps:
+              type: object
+              description: This parameter is a map of next possible steps for this approval request flow
+
+
+    StepTemplate:
+      title: ''
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the object.
+        approver:
+          type: array
+          items:
+            type: object
+            description: Array of unique Id and name of Portal user or Portal User group
+            properties:
+              id:
+                type: string
+                description: Unique identifier for the object.
+              name:
+                type: string
+                description: Name of the object.
+        notification:
+          type: object
+          properties:
+            pending:
+              type: object
+              properties:
+                message:
+                  type: string
+                subject:
+                  type: string
+            result:
+              type: object
+              properties:
+                message:
+                  type: string
+                subject:
+                  type: string
+
+
+        mode:
+          oneOf:
+            - enum:
+                - EVERYONE
+                - ANYONE
+          description: Approver type. Either user or group
+          type: string
+        approverType:
+          description: Attribute to define type of approver configured. Either be of USER or GROUP
+          oneOf:
+            - enum:
+                - USER
+                - GROUP
+          type: string
+      required:
+        - approver
+        - approverType
+        - mode
+        - approval_pending_notification_enabled
+        - approval_pending_notification_subject
+        - approval_pending_notification_message
+        - approval_result_notification_enabled
+        - approval_result_notification_subject
+        - approval_result_notification_message
+      description: 'Step objects are used to define a level in a approval workflow. Step can have array of approvers or user group. '
+    CreationResponse:
+      title: CreationResponse
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique id of saved object
+        _self:
+          type: string
+          description: Location of entity
+    ApprovalTrace:
+      type: object
+      properties:
+        trace:
+          $ref: '#/components/schemas/RequestTrace'
+  responses:
+    401:
+      description: The request was unacceptable, due to invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PortalResponse'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    403:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PortalResponse'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    404:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PortalResponse'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+    ApprovalRequest:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApprovalRequest'
+          examples:
+            SearchResponse:
+              $ref: '#/components/examples/ApprovalRequest'
+    ApprovalTrace:
+      description: List of Approval requests grouped by step for the given approval flow
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApprovalTrace'
+          examples:
+            ApprovalTraceExample:
+              $ref: '#/components/examples/ApprovalTrace'
+  examples:
+    401:
+      value:
+        code: 401
+        message: Invalid credentials
+    403:
+      value:
+        code: 403
+        message: Insufficient privileges
+    404:
+      value:
+        status: 404
+        message: Unable to find the configuration
+    ApprovalFlowSearchResponse:
+      value:
+        result:
+          - name: New Flow version
+            description: Flow with multilevel approval
+            id: 14594abf-054f-4e4d-b16d-3eb8495f25dc
+        count: 1
+        _links:
+          _self: rest/v1/approvals?page=0
+          _next: rest/v1/approvals?page=1
+    ApprovalRequestSearchResponse:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 14594abf-054f-4e4d-b16d-3eb8495f25dc
+            flowId: 5a6eed06-1ec9-4257-b79f-88621da4fffb
+            stepId: fd972ce8-5d33-4721-aaa5-15c85b9e6566
+            groupId: 9870271b-5413-3053-b5b3-12f97a513552
+            status: PENDING
+            type: APPLICATION_CREATION_REQUEST
+            contextId: d5982437-a78a-40d5-9618-bedae3818c6e
+            contextData:
+              firstName: John
+              lastName: Oliver
+              appType: API
+              name: ApprApp
+              email: johnoliver@gmail.com
+
+        count: 1
+        _links:
+          _self: rest/v1/approvals/request?page=0
+          _next: rest/v1/approvals/request?page=1
+    FlowInstanceSearchResponse:
+      value:
+        result:
+          - id: fb39605e-0f55-4098-a28e-4db588e1510c
+            status: COMPLETED
+            root:
+              id: 7b5bb9b5-5d63-46fd-89d7-315fae052fa4
+              executor: APPLICATION_REQUEST_PENDING
+              status: COMPLETED
+              configuration: {}
+              nextSteps:
+                APPROVED:
+                  id: 1ce1be73-6408-4b59-b210-45a18bac4fc0
+                  executor: APPLICATION_REQUEST_ACCEPTED
+                  status: COMPLETED
+                  configuration: {}
+                  nextSteps: {}
+                  created: 2021-03-25 13:03
+                  modified: 2021-03-25 13:03
+                REJECTED:
+                  id: ee58bbc3-7234-4c1d-9d24-12d8055d4fdb
+                  executor: APPLICATION_REQUEST_REJECTED
+                  status: SKIPPED
+                  configuration: {}
+                  nextSteps: {}
+                  created: 2021-03-25 13:03
+                  modified: 2021-03-25 13:03
+              created: 2021-03-25 13:03
+              modified: 2021-03-25 13:03
+            parameters:
+              custom: {}
+              redirect_uris: '[/rest/v1/oauth/callback]'
+              subscription: false
+              source: ApplicationCreationHandler
+              externalrefkey: 757bbd47-35a4-4513-8470-8205cb59f5c4
+              step_id: 1ce1be73-6408-4b59-b210-45a18bac4fc0
+              provider_ref: a1b3a59c-0639-4260-a9a6-c75c78fcb62d
+              flow_type: APPLICATION_CREATION_REQUEST
+              apis: "[c2eb4247-8274-4ffb-978e-382c23825cfa]"
+              application: 379cbafd-b3a3-4d10-aa8c-b639eb1b7e05
+              correlation: e60e1a2e-ba12-475b-843d-8ee994b7de92
+              user_request_id: df98180b-a97f-480c-9091-d0d779abc5ea
+              flow_id: fb39605e-0f55-4098-a28e-4db588e1510c
+              name: PhotoApp
+              api: c2eb4247-8274-4ffb-978e-382c23825cfa
+              user: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+              tenant: default
+            type: APPLICATION_CREATION_REQUEST
+            contextId: 379cbafd-b3a3-4d10-aa8c-b639eb1b7e05
+
+        count: 1
+        _links:
+          _self: /rest/v1/approvals/instance?status=ALL&page=0
+          _next: /rest/v1/approvals/instance?status=ALL&page=1
+    ApprovalFlow:
+      value:
+        name: Provider Approval
+        description: Approve by provider
+        id: 14594abf-054f-4e4d-b16d-3eb8495f25dc
+        steps:
+          - id: 0c6b2610-06de-4f31-9463-0150c176b7c7
+            mode: ANYONE
+            approver_type: GROUP
+            approver:
+              - id: 7dead6ba-d7f3-321d-a5c9-971dc33b73fd
+                name: API Provider
+    ApprovalRequest:
+      value:
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        id: 14594abf-054f-4e4d-b16d-3eb8495f25dc
+        flowId: 5a6eed06-1ec9-4257-b79f-88621da4fffb
+        stepId: fd972ce8-5d33-4721-aaa5-15c85b9e6566
+        groupId: 9870271b-5413-3053-b5b3-12f97a513552
+        status: PENDING
+        type: APPLICATION_CREATION_REQUEST
+        contextId: d5982437-a78a-40d5-9618-bedae3818c6e
+        contextData:
+          firstName: John
+          lastName: Oliver
+          appType: API
+          name: ApprApp
+          email: johnoliver@gmail.com
+    ApprovalTrace:
+      value:
+        trace:
+          - Step 1:
+            owner: 05e85288-f375-43be-a25c-9fba3dc39716
+            id: 05e85288-f375-43be-a25c-9fba3dc39716
+            modified: 2020-07-10 12:48
+            created: 2020-07-10 12:48
+            flowId: 05e85288-f375-43be-a25c-9fba3dc39716
+            stepId: 05e85288-f375-43be-a25c-9fba3dc39716
+            status: APPROVED
+            approver:
+              id: 05e85288-f375-43be-a25c-9fba3dc39716
+              firstName: Admin
+              lastName: Admin
+              pictureUrl: null
+          - Step 2:
+            owner: 05e85288-f375-43be-a25c-9fba3dc39716
+            id: 05e85288-f375-43be-a25c-9fba3dc39716
+            modified: 2020-07-10 12:48
+            created: 2020-07-10 12:48
+            flowId: 05e85288-f375-43be-a25c-9fba3dc39716
+            stepId: 05e85288-f375-43be-a25c-9fba3dc39716
+            status: APPROVED
+            approver:
+              id: 05e85288-f375-43be-a25c-9fba3dc39716
+              firstName: Admin
+              lastName: Admin
+              pictureUrl: null
+    PortalResponseError:
+      value:
+        code: 400
+        message: "User provided data is not correct"
+        errors: [
+
+        ]
+    CreatedResponse:
+      value:
+        id: f790526b-4de4-c305-732d-d8a3d3e2bc12
+        _self: /rest/v1/approval/policy
+    ApprovalPolicy:
+      value:
+        id: e5e4a159-26a8-4709-95a0-6bd4412c5b20
+        policies:
+          - id: 4c1f7d17-1e69-47ca-87f6-2f6527180529
+            type: INTERNAL_APPROVAL
+            parameters:
+              - flow_id: 6e1e3d52-9c62-4e52-910c-fc602a19ad9b
+                flow_name: ProviderApprovalFlow
+    FlowResponse:
+      value:
+        name: Flow
+        description: Flow with multilevel approval
+        id: 326dcd63-f215-415a-bb01-7fa53e75d238
+        steps:
+          - id: 33d727f3-95e2-499f-9679-29d17d968a16
+            approver:
+              - id: 9ab209d6-6a9b-3225-8d7f-56cc4b3b125d
+                name: "Administrator"
+            mode: EVERYONE
+            approver_type: USER
+            notification:
+              pending:
+                subject: Approval request pending
+                message: Hello ${approver.name},  A request by ${requestor.name} to become a registered user needs your review and approval. You can click the link to approve http://localhost:4200/rest/v/approvals/${approval.request.id}/approve  or click the link to reject http://localhost:4200/rest/v/approvals/${approval.request.id}/reject  Best Regards,API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+              result:
+                subject: Result of registration request
+                message: Hello ${approver.name}, A registration request by ${requestor.name} has been ${approval.result}  Best Regards, API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+          - approver:
+              - id: c32209d6-6a9b-3225-8d7f-56cc4b3b125d
+                name: "API Administrator"
+            mode: EVERYONE
+            approver_type: GROUP
+            notification:
+              pending:
+                subject: Approval request pending
+                message: Hello ${approver.name},  A request by ${requestor.name} to become a registered user needs your review and approval. You can click the link to approve http://localhost:4200/rest/v/approvals/${approval.request.id}/approve  or click the link to reject http://localhost:4200/rest/v/approvals/${approval.request.id}/reject  Best Regards,API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+              result:
+                subject: Result of registration request
+                message: Hello ${approver.name}, A registration request by ${requestor.name} has been ${approval.result}  Best Regards, API Cloud Team *** This notification was sent automatically. Do not reply to this email.***
+  requestBodies: {}
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []
