@@ -1,0 +1,1057 @@
+openapi: 3.0.1
+info:
+  title: Portal Topics API
+  version: '10.11'
+  description: |
+    ## Overview
+    Topic management API helps to list or create a topic in API/Package/custom assets. It is also used to upvote/downvote a topic or flag a topic. Depending on whether a post is your own or from another user, you can perform different actions.
+
+    ## Functionalities supported
+
+    ## Retrieving Topics
+      Topics can be retrieved by specifying a topic identifier. If the user has access to a topic stream then user will be able to retrieve the comments associated to the topic stream as well.
+
+    ## Updating / Deleting Topics
+      The user who post the topic(owner) can edit/delete his topic. A user will not be allowed to modify another users topic.
+
+    ## Up/Down vote
+      Upvoting or Downvoting a topic.
+
+    ## Flagging
+      Flagging a topic tells that it requires moderator attention. A user can flag a topic based on its content if he/she feels inappropriate.
+
+    ## Authorization
+    - Users with role 'Administrator' and/or 'Provider' can list all flagged topics or comments,pin or accept flags for a topic.
+    - Users with role 'Administrator' can list all the flags for topics and comments.
+    - An authenticated user can get the count of upvote,downvote,flag operations count.
+    - Users who have access to an api can create,upvote,downvote,flag,bookmark or get a topic for the api and the same holds true for package.
+    - User who is the owner of the topic can update the topic.
+    - User who is the owner of the topic or with role 'Administrator' and/or 'Provider' can delete a topic.
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  '/apis/{id}/topics':
+    post:
+      tags:
+        - Topic
+      summary: Create a topic in the given API
+      description: Create a topic in the given API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+            examples:
+              TopicPayload:
+                $ref: '#/components/examples/APITopicCreation'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/API_NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for API. Refers to the GUID for the API. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/packages/{id}/topics':
+    post:
+      tags:
+        - Topic
+      summary: Create a topic in the given Package
+      description: Create a topic in the given Package
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+            examples:
+              TopicPayload:
+                $ref: '#/components/examples/PackageTopicCreation'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/Package_NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/types/{type}/instances/{id}/topics':
+    post:
+      tags:
+        - Topic
+      summary: Create a topic in the given custom asset
+      description: Create a topic in the given custom asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+            examples:
+              TopicPayload:
+                $ref: '#/components/examples/CustomAssetTopicCreation'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/CustomAsset_NotFound'
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}':
+    get:
+      tags:
+        - Topic
+      summary: Get a topic by id
+      description: Get a topic by id
+      responses:
+        '200':
+          $ref: '#/components/responses/TopicResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Topic
+      summary: Update an existing topic by its Id
+      description: Update an existing topic by its Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+            examples:
+              Topic:
+                $ref: '#/components/examples/APITopicCreation'
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Topic
+      summary: Delete a topic by Id
+      description: Delete a topic by Id
+      responses:
+        '204':
+          description: The response when topic is successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/upvote':
+    put:
+      tags:
+        - Topic
+      summary: Upvote/Undo-Upvote  a topic by its dd
+      description: Upvote/Undo-Upvote a topic by its id. Calling this endpoint again will undo upvote.
+      responses:
+        '200':
+          $ref: '#/components/responses/UpvoteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/downvote':
+    put:
+      tags:
+        - Topic
+      summary: Downvote/Undo-Downvote a topic by its Id
+      description: Downvote/Undo-Downvote  a topic by its Id. Calling this endpoint again will undo downvote.
+      responses:
+        '200':
+          $ref: '#/components/responses/DownVoteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/flag':
+    put:
+      tags:
+        - Topic
+      summary: Flag/Un-flag a topic by its Id
+      description: Flag/Un-flag a topic by its Id. Calling this endpoint again will undo flag.
+      responses:
+        '200':
+          $ref: '#/components/responses/FlagResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/pin':
+    put:
+      tags:
+        - Topic
+      summary: Pin/Un-pin a topic by its Id
+      description: Pin/Un-pin a topic by its Id. Calling this endpoint again will undo pin.
+      responses:
+        '200':
+          $ref: '#/components/responses/PinnedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/bookmarks':
+    put:
+      tags:
+        - Topic
+      summary: Bookmark/Undo Bookmark the topic.
+      description: Bookmark/Undo Bookmark the topic with the given id.
+      responses:
+        '200':
+          $ref: '#/components/responses/BookmarkResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/upvote/_count':
+    get:
+      tags:
+        - Topic
+      summary: Upvote count of a given topic
+      description: Upvote count of a given topic
+      responses:
+        '200':
+          description: The response when the upvote count is retrieved successfully
+          $ref: '#/components/responses/Count'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/downvote/_count':
+    get:
+      tags:
+        - Topic
+      summary: Downvote count of a given topic
+      description: Downvote count of a given topic
+      responses:
+        '200':
+          description: The response when the downvote count is retrieved successfully
+          $ref: '#/components/responses/Count'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/flag/_count':
+    get:
+      tags:
+        - Topic
+      summary: Flag count of a given topic
+      description: Flag count of a given topic
+      responses:
+        '200':
+          description: The response when the flag count is retrieved successfully
+          $ref: '#/components/responses/Count'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/_count':
+    get:
+      tags:
+        - Topic
+      summary: Upvote, downvote and flag count of a given topic
+      description: Upvote, downvote and flag count of a given topic
+      responses:
+        '200':
+          $ref: '#/components/responses/CountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/{id}/flagged':
+    put:
+      tags:
+        - Topic
+      summary: Flag Topic in APIPortal by its Id
+      description: Flag Topic in APIPortal by its Id. This operation can be perfomed only by admin
+      responses:
+        '200':
+          $ref: '#/components/responses/FlaggedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for topic. Refers to the GUID for the topic. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        allowEmptyValue: false
+        schema:
+          type: string
+          format: uuid
+
+  '/topics/link/preview':
+    get:
+      tags:
+        - Topic
+      summary: Get preview of given url
+      description: Get preview of given url
+      parameters:
+        - in: query
+          required: true
+          name: url
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/LinkResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/collaboration/flags':
+    get:
+      tags:
+        - Collaboration
+      summary: Get list of topics and comments that has flags.
+      description: Get list of topics and comments that has flags.
+      responses:
+        '200':
+          $ref: '#/components/responses/CollaborationFlagsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/collaboration/flagged':
+    get:
+      tags:
+        - Collaboration
+      summary: Get list of topics and comments that are flagged by Administrator
+      description: Get list of topics and comments that are flagged by Administrator
+      responses:
+        '200':
+          $ref: '#/components/responses/CollaborationFlagsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  schemas:
+    CollabObject:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of a collaboration object
+        content:
+          description: Content of the topic
+          type: object
+          properties:
+            type:
+              description: Type of content
+              type: string
+              enum:
+                - link
+                - simple
+                - rich
+            value:
+              description: Content text
+              type: string
+        upvotes:
+          description: List of users who upvoted the entity
+          type: array
+          items:
+            type: string
+        downvotes:
+          description: List of users who downvoted the entity
+          type: array
+          items:
+            type: string
+        flags:
+          description: List of users who flagged the entity
+          type: array
+          items:
+            type: string
+        flagged:
+          description: Indicates whether the given entity is flagged
+          type: boolean
+        owner:
+          description: Owner id of the entity
+          type: string
+        created:
+          type: string
+          description: Entity creation time
+        modified:
+          type: string
+          description: Entity modified time
+    Topic:
+      allOf:
+        - $ref: '#/components/schemas/CollabObject'
+        - type: object
+          properties:
+            pinned:
+              description: Indicates whether the given topic is pinned
+              type: boolean
+            stream:
+              type: object
+              description: Indicates the Stream details(API/Package) for which the topic is created
+              properties:
+                type:
+                  description: Indicates the stream type(API/Package)
+                  type: string
+                id:
+                  description: Unique identification for stream(API/Package).For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+                  type: string
+            tags:
+              type: array
+              description: Tags for the given topic
+              items:
+                type: string
+    TopicDTO:
+      allOf:
+        - $ref: '#/components/schemas/Topic'
+        - type: object
+          properties:
+            person:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Owner of the topic
+                firstName:
+                  type: string
+                  description: First name of the owner
+                lastName:
+                  type: string
+                  description: Last name of the owner
+                pictureUrl:
+                  type: string
+                  description: Profile pic url of the owner
+                email:
+                  type: string
+                  description: Email of the topic owner
+            comments:
+              description: Number of comments in the given topic
+              type: integer
+    Comment:
+      allOf:
+        - $ref: '#/components/schemas/CollabObject'
+        - type: object
+          properties:
+            topicId:
+              type: string
+              description: Identifier of a topic
+    CommentDTO:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            person:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Owner of the comment
+                firstName:
+                  type: string
+                  description: First name of the owner
+                lastName:
+                  type: string
+                  description: Last name of the owner
+                pictureUrl:
+                  type: string
+                  description: Profile pic url of the owner
+                email:
+                  type: string
+                  description: Email of the comment owner
+    CollaborationDTO:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicDTO'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentDTO'
+    CreatedResponse:
+      type: object
+      properties:
+        id:
+          description: Unique identification for topic.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+          type: string
+        _self:
+          description: Self reference of the newly created topic
+          type: string
+    UpdatedResponse:
+      type: object
+      properties:
+        code:
+          description: Response code
+          type: integer
+        message:
+          description: Response message
+          type: string
+    CountResponse:
+      type: object
+      properties:
+        upvote:
+          description: Number of upvotes for the given topic
+          type: integer
+        downvote:
+          description: Number of downvotes for the given topic
+          type: integer
+        flag:
+          description: Number of flags for the given topic
+          type: integer
+    LinkMetadata:
+      type: object
+      properties:
+        title:
+          description: Title of the link
+          type: string
+        description:
+          description: Description of the link
+          type: string
+        image:
+          description: Image preview of the link
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          description: Response code
+          type: integer
+        message:
+          description: Response message
+          type: string
+
+    Count:
+      type: integer
+      format: int32
+
+  examples:
+    Topic:
+      value:
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        id: 5efd843c-4ce5-493a-9749-c4cce0931888
+        flagged: false
+        modified: 1616649645858
+        created: 1616649645858
+        stream:
+          type: API
+          id: 74733475-a879-4693-b94f-22c9c946d433
+        upvotes:
+          - 1d4a465a-3b9a-3b0e-b14d-ae3d08c3b1d9
+        content:
+          value: sample topic
+          type: rich
+        pinned: false
+        tags:
+          - tag1
+          - tag2
+    APITopicCreation:
+      value:
+        tags:
+          - tag1
+          - tag2
+        stream:
+          type: API
+          id: 74733475-a879-4693-b94f-22c9c946d433
+        content:
+          value: sample topic
+          type: rich
+    PackageTopicCreation:
+      value:
+        tags:
+          - tag1
+          - tag2
+        stream:
+          type: PACKAGE
+          id: 74733475-a879-4693-b94f-22c9c946d433
+        content:
+          value: sample topic
+          type: rich
+    CustomAssetTopicCreation:
+      value:
+        tags:
+          - tag1
+          - tag2
+        stream:
+          type: CUSTOM_ASSET
+          id: 74733475-a879-4693-b94f-22c9c946d433
+        content:
+          value: sample topic
+          type: rich
+    CreatedResponse:
+      value:
+        id: 4ba06f7c-f4dd-4868-9d97-27134e102d00
+        _self: /rest/v1/topics/4ba06f7c-f4dd-4868-9d97-27134e102d00
+    UpdatedResponse:
+      value:
+        code: 200
+        message: Topic is updated successfully
+    UpvoteExample:
+      value:
+        code: 200
+        message: Upvoted successfully
+    UndoUpvoteExample:
+      value:
+        code: 200
+        message: Undo Upvote successful
+    DownVoteExample:
+      value:
+        code: 200
+        message: Downvoted successfully
+    UndoDownVoteExample:
+      value:
+        code: 200
+        message: Undo downvote successful
+    FlagResponse:
+      value:
+        code: 200
+        message: Raised flag successfully
+    UnFlagResponse:
+      value:
+        code: 200
+        message: Unflag successful
+    PinnedResponse:
+      value:
+        code: 200
+        message: Pinned successfully
+    UnPinnedResponse:
+      value:
+        code: 200
+        message: Unpin successful
+    BookmarkResponse:
+      value:
+        code: 200
+        message: Topic is bookmarked successfully
+    UnBookmarkResponse:
+      value:
+        code: 200
+        message: Undo bookmarking the topic is successful
+    CountResponse:
+      value:
+        upvote: 1
+        downvote: 1
+        flag: 0
+    FlagAcceptedResponse:
+      value:
+        code: 200
+        message: Flagged successfully
+    AlreadyFlaggedResponse:
+      value:
+        code: 400
+        message: Given entity is already flagged
+    LinkMetadata:
+      value:
+        title: Platform for Enterprise Integration & IoT | Software AG
+        description: 'Software AG is a leader in platform integration and IoT for enterprises. Our platform helps you unleash your vision in our smarter, connected world.'
+        image: 'https://www.softwareag.com/en_corporate.thumb.800.480.png?ck=1591295547'
+    CollaborationDTO:
+      value:
+        topics:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 917af3d7-79ce-49a7-8bf7-93f59ab1b169
+            flagged: false
+            upvotes: [ 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4 ]
+            flags:
+              - 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            pinned: false
+            tags: [ Topic ]
+            person:
+              firstname: Administrator
+              lastname: System
+            comments: 1
+        comments:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 917af3d7-79ce-49a7-8bf7-93f59ab1b169
+            flagged: false
+            upvotes: [ 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4 ]
+            flags:
+              - 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            pinned: false
+            person:
+              firstname: Administrator
+              lastname: System
+    401:
+      value:
+        code: 401
+        message: "Invalid credentials"
+    403:
+      value:
+        code: 403
+        message: "Insufficient privileges"
+    404:
+      value:
+        code: 404
+        message: "Unable to find the topic with id [74733475-a879-4693-b94f-22c9c946d433]"
+    API_404:
+      value:
+        code: 404
+        message: "Unable to find the API with id [74733475-a879-4693-b94f-22c9c946d433]"
+    Package_404:
+      value:
+        code: 404
+        message: "Unable to find the Package with id [74733475-a879-4693-b94f-22c9c946d433]"
+    CustomAsset_404:
+      value:
+        code: 404
+        message: "Unable to find the Custom Asset with id [74733475-a879-4693-b94f-22c9c946d433]"
+    "CountExample":
+      value:
+        3
+
+  responses:
+    TopicResponse:
+      description: Topic Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Topic'
+          examples:
+            TopicExample:
+              $ref: '#/components/examples/Topic'
+    CreationResponse:
+      description: The response when topic is created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+          examples:
+            CreationResponse:
+              $ref: '#/components/examples/CreatedResponse'
+    UpdatedResponse:
+      description: The response when the topic is successfully updated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            UpdationResponse:
+              $ref: '#/components/examples/UpdatedResponse'
+    UpvoteResponse:
+      description: The response when the topic is successfully upvoted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            UpvoteExample:
+              $ref: '#/components/examples/UpvoteExample'
+            UndoUpvoteExample:
+              $ref: '#/components/examples/UndoUpvoteExample'
+    DownVoteResponse:
+      description: The response when the topic is successfully downvoted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            DownVoteExample:
+              $ref: '#/components/examples/DownVoteExample'
+            UndoDownvoteExample:
+              $ref: '#/components/examples/UndoDownVoteExample'
+    FlagResponse:
+      description: The response when the topic is flagged/un-flagged successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            FlaggedResponse:
+              $ref: '#/components/examples/FlagResponse'
+            UnflaggedResponse:
+              $ref: '#/components/examples/UnFlagResponse'
+    PinnedResponse:
+      description: The response when the topic is pinned/un-pinned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            PinnedResponse:
+              $ref: '#/components/examples/PinnedResponse'
+            UnPinnedResponse:
+              $ref: '#/components/examples/UnPinnedResponse'
+    BookmarkResponse:
+      description: The response when the topic is bookmarked/un-bookmarked successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            BookmarkResponse:
+              $ref: '#/components/examples/BookmarkResponse'
+            UnBookmarkResponse:
+              $ref: '#/components/examples/UnBookmarkResponse'
+    CountResponse:
+      description: The response of operation count of a given topic
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CountResponse'
+          examples:
+            CountResponse:
+              $ref: '#/components/examples/CountResponse'
+    FlaggedResponse:
+      description: The response when the topic is flagged by Administrator
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatedResponse'
+          examples:
+            FlaggedResponse:
+              $ref: '#/components/examples/FlagAcceptedResponse'
+            AlreadyFlaggedResponse:
+              $ref: '#/components/examples/AlreadyFlaggedResponse'
+    LinkResponse:
+      description: The response of Link preview
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkMetadata'
+          examples:
+            LinkMetadata:
+              $ref: '#/components/examples/LinkMetadata'
+    CollaborationFlagsResponse:
+      description: List of topics and comments that has flags
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CollaborationDTO'
+          examples:
+            CollaborationFlagsResponse:
+              $ref: '#/components/examples/CollaborationDTO'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    API_NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            API_404:
+              $ref: '#/components/examples/API_404'
+    Package_NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Package_404:
+              $ref: '#/components/examples/Package_404'
+    CustomAsset_NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            CustomAsset_404:
+              $ref: '#/components/examples/CustomAsset_404'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+
+    Count:
+      description: Count
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Count'
+          examples:
+            CountExample:
+              $ref: '#/components/examples/CountExample'

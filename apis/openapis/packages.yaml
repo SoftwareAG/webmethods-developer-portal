@@ -1,0 +1,1435 @@
+openapi: 3.0.1
+info:
+  title: Portal Packages API
+  description: |-
+    ## Overview
+    API Package refers to a logical grouping of multiple APIs from a single API provider.A package can contain one or more APIs and an API can belong to more than one package. An API Package can be associated with multiple plans at a time.
+
+    This helps the API Providers in providing tiered access to their APIs to allow for different service levels and pricing plans.
+
+    ## Package Management API
+    Package Management API helps to manage packages in API Portal
+
+    ## Functionalities supported
+    - Get details of the packages and its APIs,Plans,followers, topics/comments, rating and communities
+    - Add/Remove APIs linked with the package
+    - Add/Remove Plans linked with the package
+    - Apply rating to a package
+    - Follow/Un-Follow a package
+    - Modify the state of a Package
+
+    ## Authorization
+     - Users with privileges *API Administrator* and/or *API Provider* can view,create,update and delete package details.
+     - Users with privilege *API Consumer* can only view the package details except the 'deprecated' packages.
+
+  version: "10.11"
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  /packages:
+    get:
+      tags:
+        - Package
+      summary: Get all packages
+      description: Get all the packages available in the system
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageListResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - Package
+      summary: Create a package
+      description: Create a new package
+      requestBody:
+        description: Package payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Package'
+            examples:
+              package:
+                $ref: '#/components/examples/NewPackage'
+      responses:
+        "201":
+          $ref: '#/components/responses/PackageCreatedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+  /packages/{id}:
+    get:
+      tags:
+        - Package
+      summary: Retrieve package details
+      description: Retrieve the details of a package identified by its id
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageByIdResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Package
+      summary: Update a package
+      description: Update a package identified by its id with the input data
+      requestBody:
+        description: Create package payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Package'
+            examples:
+              package:
+                $ref: '#/components/examples/Package'
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageByIdResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Package
+      summary: Delete package
+      description: Delete a package identified by its id
+      responses:
+        "204":
+          description: Package is deleted successfully
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/plans:
+    get:
+      tags:
+        - Package
+      summary: Get all the plans of the given package
+      responses:
+        "200":
+          $ref: '#/components/responses/GetLinkedPlansResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Package
+      summary: Add Plans to a package
+      description: Add Plans to the given package
+      requestBody:
+        description: Update Plans payload
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            examples:
+              plans:
+                $ref: '#/components/examples/PlanIdsExample'
+      responses:
+        "200":
+          $ref: '#/components/responses/PlansLinkedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Package
+      summary: Removes specified plan(s)
+      description: Removes specified plan(s) from the package
+      requestBody:
+        description: Array of plan ids
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            examples:
+              plans:
+                $ref: '#/components/examples/PlanIdsExample'
+      responses:
+        "200":
+          $ref: '#/components/responses/PlansUnlinkedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/apis:
+    get:
+      tags:
+        - Package
+      summary: Get all APIs
+      description: Get all the APIs of the package identified by its id
+      responses:
+        "200":
+          $ref: '#/components/responses/GetLinkedAPIsResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Package
+      summary: Add API(s)
+      description: Add API(s) to a package by passing their ids.
+      requestBody:
+        description: Update APIs payload
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            examples:
+              APIs:
+                $ref: '#/components/examples/PlanIdsExample'
+      responses:
+        "200":
+          $ref: '#/components/responses/APIsLinkedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Package
+      summary: Remove API(s)
+      description: Remove the API(s) from the package
+      requestBody:
+        description: identifiers (id) of the APIs
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            examples:
+              APIs:
+                $ref: '#/components/examples/PlanIdsExample'
+      responses:
+        "200":
+          $ref: '#/components/responses/APIsUnlinkedResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/communities:
+    get:
+      tags:
+        - Package
+      summary: Get the Communities of a package
+      description: Get the Communities associated to a package
+      responses:
+        "200":
+          $ref: '#/components/responses/LinkedCommunityListResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/topics:
+    get:
+      tags:
+        - Package
+      summary: Get the topics
+      description: Get the topics associated with the package
+      responses:
+        "200":
+          $ref: '#/components/responses/TopicListResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/rate:
+    get:
+      tags:
+        - Package
+      summary: Retrieve the rating details
+      description: Retrieve the rating details of the package
+      responses:
+        "200":
+          $ref: '#/components/responses/RatingResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Package
+      summary: Give rating to a package
+      description: Give rating to a package identified by its id
+      requestBody:
+        description: Apply rating payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingRequest'
+            examples:
+              rating:
+                $ref: '#/components/examples/RatingExample'
+      responses:
+        "200":
+          $ref: '#/components/responses/RatingResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/followers:
+    get:
+      tags:
+        - Package
+      summary: Get the followers
+      description: Get the details of followers of the given package
+      responses:
+        "200":
+          $ref: '#/components/responses/FollowersListResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Package
+      summary: Follow or Un-Follow the package
+      description: Follow or Un-Follow the package to get/stop the notifications
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageFollowResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/followers/_count:
+    get:
+      tags:
+        - Package
+      summary: Get the count of followers following the given package
+      responses:
+        "200":
+          $ref: '#/components/responses/FollowersCountResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    parameters:
+      - name: id
+        in: path
+        description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        required: true
+        schema:
+          type: string
+  /packages/{id}/state:
+    put:
+      summary: Modify the state of the Package
+      description: Endpoint can be used to update the state of the given Package
+      parameters:
+        - name: id
+          in: path
+          description: Unique identification for package. Refers to the GUID for the package. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+          required: true
+          schema:
+            type: string
+        - name: targetState
+          in: query
+          description: Target state
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/UpdateStateResponse'
+        400:
+          $ref: '#/components/responses/InvalidStateUpdate'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    accesstoken:
+      type: apiKey
+      in: cookie
+      name: accesstoken
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ObjectLinked:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+          description: detailed message
+    RatingRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          format: int32
+          description: rate the package with the number ranging from 1 to 5
+    StringList:
+      type: object
+    Error:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          description: error code
+          format: int32
+        message:
+          description: detailed error message
+          type: string
+    Property:
+      type: object
+      properties:
+        value:
+          type: string
+        key:
+          type: string
+    PlanEnforcements:
+      type: object
+      properties:
+        name:
+          type: string
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/Property'
+    PlanCost:
+      description: cost structure of the plan
+      type: object
+      properties:
+        duration:
+          description: incurs cost at this duration interval. e.g 1 hour
+          type: string
+        currency:
+          description: name of the currency. e.g US$ or INR
+          type: string
+        value:
+          description: price value. e.g 1500
+          type: string
+    API:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for API. Refers to the GUID fo the API. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        name:
+          type: string
+          description: name of the API
+        summary:
+          type: string
+          description: details of the API
+        version:
+          type: string
+          description: Version information of the API
+        type:
+          type: string
+          description: Type of the API. Supported Values 'REST','SOAP','ODATA'
+          enum:
+            - REST
+            - SOAP
+            - ODATA
+        externalRefKey:
+          type: string
+    Plan:
+      type: object
+      properties:
+        license:
+          type: string
+          description: holds the license details for using the plan
+        enforcements:
+          description: contains the quota limits and alert message definition
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanEnforcements'
+        cost:
+          $ref: '#/components/schemas/PlanCost'
+        terms:
+          type: string
+          description: terms and contions of the plan
+        deprecated:
+          type: boolean
+          description: indicates if the plan is depricated or active
+        name:
+          type: string
+          description: Name of the plan
+        id:
+          type: string
+          description: Unique identification for plan. Refers to the GUID fo the plan. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        icon:
+          $ref: '#/components/schemas/Icon'
+        description:
+          description: detailed description and usage of the plan
+          type: string
+
+    Community:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for community. Refers to the GUID fo the community. For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        name:
+          type: string
+          description: Name of the Community
+        owner:
+          type: string
+          description: GUID of the user who owns of the Community
+        description:
+          type: string
+          description: Description of the Community
+
+    Followers:
+      type: object
+      properties:
+        firstname:
+          type: string
+          description: firstname of the follower user
+        id:
+          type: string
+          description: Unique identification for follower user. Refers to the GUID fo the user. For example `ebfc815e-e2cc-3a16-a251-05bb7b3e1e53`
+        lastname:
+          type: string
+          description: lastname of the follower user
+
+    LinkedAPIList:
+      type: object
+      properties:
+        result:
+          required: true
+          type: array
+          description: Array of objects matching given criteria
+          items:
+            $ref: '#/components/schemas/API'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          required: true
+          type: integer
+          description: total number of results found
+          format: int32
+    LinkedPlanList:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          description: Array of objects matching given criteria
+          items:
+            $ref: '#/components/schemas/Plan'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          description: total number of results found
+          format: int32
+
+    LinkedCommunityList:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          description: Array of objects matching given criteria
+          items:
+            $ref: '#/components/schemas/Community'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          description: total number of results found
+          format: int32
+
+    LinkedTopicList:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          description: Array of objects matching given criteria
+          items:
+            $ref: '#/components/schemas/Topic'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          description: total number of results found
+          format: int32
+
+    Pagination:
+      required:
+        - _self
+      type: object
+      properties:
+        _self:
+          type: string
+        _next:
+          type: string
+    FollowersList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Followers'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+    PackageList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+
+    Summary:
+      type: object
+      properties:
+        summary:
+          type: string
+        name:
+          type: string
+        id:
+          type: string
+    TopicList:
+      required:
+        - result
+        - count
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        _links:
+          $ref: '#/components/schemas/Pagination'
+        count:
+          type: integer
+          format: int32
+    PackageCreated:
+      required:
+        - id
+        - _self
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for package. Refers to the GUID fo the package.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        _self:
+          type: string
+          description: link to the current package
+    Stream:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+    Package:
+      type: object
+      properties:
+        plans:
+          description: plans included in the package
+          type: array
+          items:
+            type: string
+            description: id of the plan
+        name:
+          type: string
+          description: name of the package
+        description:
+          type: string
+          description: detailed description and usage of the package
+        summary:
+          type: string
+          description: short summary of the package
+        icon:
+          $ref: '#/components/schemas/Icon'
+        id:
+          type: string
+          description: Unique identification for package. Refers to the GUID fo the package. For example `532e53ef-3b2a-45af-b859-2456dca1bb1f`
+        providerRef:
+          type: string
+          description: id of the provider
+        rating:
+          type: number
+          description: review rating of the package for out of 5. Default value is '0'
+        communities:
+          description: the package shared to the communities
+          type: array
+          items:
+            type: string
+            description: id of the coomunity
+        apis:
+          description: APIs included in the package
+          type: array
+          items:
+            type: string
+            description: id of the API
+        follower:
+          type: boolean
+          description: indicates if any follower(s) following the package
+    Icon:
+      description: logo/icon for the package
+      type: object
+      properties:
+        url:
+          type: string
+          description: location of the icon file
+        type:
+          type: string
+          description: denotes if internal file system icon of externally located. Supported values 'INTERNAL', 'EXTERNAL'
+          enum:
+            - INTERNAL
+            - EXTERNAL
+    RatingResponse:
+      type: object
+      properties:
+        average:
+          type: number
+          format: double
+          description: average of all total ratings
+        total:
+          type: integer
+          format: int32
+          description: total number of users rated the package
+        rating:
+          type: number
+          format: double
+          description: rating of the particular user who views the package currently.
+    Topic:
+      allOf:
+        - $ref: '#/components/schemas/CollabObject'
+        - type: object
+          properties:
+            pinned:
+              description: Indicates whether the given topic is pinned
+              type: boolean
+            stream:
+              type: object
+              description: Indicates the Stream details(API/Package) for which the topic is created
+              properties:
+                type:
+                  description: Indicates the stream type(API/Package)
+                  type: string
+                id:
+                  description: Unique identification for Stream(API/Package). Refers to the GUID of the Stream(API/Package).For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+                  type: string
+            tags:
+              type: array
+              description: Tags for the given topic
+              items:
+                type: string
+
+    CollabObject:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identification for collaboration object. Refers to the GUID of the collaboration object.For example `d4a6bc0b-24dd-4035-862a-0f8f7608512e`
+        content:
+          description: Content of the topic
+          type: object
+          properties:
+            type:
+              description: Type of content
+              type: string
+              enum:
+                - link
+                - simple
+                - rich
+            value:
+              description: Content text
+              type: string
+        upvotes:
+          description: List of users upvoted the entity
+          type: array
+          items:
+            type: string
+        downvotes:
+          description: List of users downvoted the entity
+          type: array
+          items:
+            type: string
+        flags:
+          description: List of users who flagged the entity
+          type: array
+          items:
+            type: string
+        flagged:
+          description: Indicates whether given entity is flagged
+          type: boolean
+        owner:
+          description: Owner id of the entity
+          type: string
+        created:
+          type: string
+          description: Entity creation time
+        modified:
+          type: string
+          description: Entity modified time
+  responses:
+    RatingRequest:
+      description: Package rated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RatingRequest'
+    FollowersCountResponse:
+      description: Followers count of package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: integer
+            format: int64
+            description: denotes the number of followers of this package
+          examples:
+            200:
+              value: 4
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/Forbidden'
+
+    GetLinkedAPIsResponse:
+      description: Retrived all APIs associated with the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkedAPIList'
+          examples:
+            200:
+              $ref: '#/components/examples/LinkedAPIListExample'
+
+    APIsLinkedResponse:
+      description: Given APIs are added to the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            200:
+              $ref: '#/components/examples/APIsLinked'
+
+    APIsUnlinkedResponse:
+      description: APIs are removed from the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            200:
+              $ref: '#/components/examples/APIsUnlikned'
+
+    GetLinkedPlansResponse:
+      description: Retrived all plans associated with the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkedPlanList'
+          examples:
+            200:
+              $ref: '#/components/examples/LinkedPlanListExample'
+    PlansLinkedResponse:
+      description: Given plans associated to the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            200:
+              $ref: '#/components/examples/PlansLinked'
+    PlansUnlinkedResponse:
+      description: Plans are removed from the package successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            200:
+              $ref: '#/components/examples/PlansUnlikned'
+    BadRequest:
+      description: User provided data is not correct
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            400:
+              $ref: '#/components/examples/BadRequest'
+    PackageCreatedResponse:
+      description: Created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PackageCreated'
+          examples:
+            201:
+              $ref: '#/components/examples/CreatedResponse'
+
+    LinkedCommunityListResponse:
+      description: Communities associated with the package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkedCommunityList'
+          examples:
+            200:
+              $ref: '#/components/examples/LinkedCommunitiesExample'
+
+    TopicListResponse:
+      description: Topics of the package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LinkedTopicList'
+          examples:
+            200:
+              $ref: '#/components/examples/LinkedTopicsExample'
+
+    PackageByIdResponse:
+      description: Package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Package'
+          examples:
+            package:
+              $ref: '#/components/examples/Package'
+    FollowersListResponse:
+      description: Followers details of package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FollowersList'
+          examples:
+            200:
+              $ref: '#/components/examples/FollowersListExample'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/Unauthorized'
+    RatingResponse:
+      description: Rating details of package is retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RatingResponse'
+          examples:
+            200:
+              $ref: '#/components/examples/RatingResponse'
+    PackageListResponse:
+      description: List of packages retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PackageList'
+          examples:
+            packages:
+              $ref: '#/components/examples/PackageListExample'
+
+    PackageFollowResponse:
+      description: Successfully Followed/Un-Followed the package
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            200-Follow:
+              $ref: '#/components/examples/PackageFollowed'
+            200-UnFollow:
+              $ref: '#/components/examples/PackageUnFollowed'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/NotFound'
+    UpdateStateResponse:
+      description: Update state response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObjectLinked'
+          examples:
+            UpdateState:
+              $ref: '#/components/examples/UpdateState'
+    InvalidStateUpdate:
+      description: Invalid state update
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            InvalidStateUpdate:
+              $ref: '#/components/examples/InvalidStateUpdate'
+
+  examples:
+    CreatedResponse:
+      value:
+        id: 532e53ef-3b2a-45af-b859-2456dca1bb1f
+        _self: /rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f
+    RatingRequest:
+      value:
+        rating: 3
+    ObjectLinkedExample:
+      value:
+        code: 200
+        message: Objects linked / unlinked successfully with the package
+    FollowersCountExample:
+      value: 1
+    "400":
+      value:
+        code: 400
+        message: User provided data is not correct
+    FollowersListExample:
+      value:
+        result:
+          - id: ebfc815e-e2cc-3a16-a251-05bb7b3e1e53
+            firstName: Paul
+            lastname: Alex
+          - id: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            firstName: Sam
+            lastName: Alex
+        count: 2
+        _links:
+          _self: "/rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f/followers?page=0"
+    "401":
+      value:
+        code: 401
+        message: Invalid credentials
+    PackageListExample:
+      value:
+        result:
+          - name: Gold package
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 532e53ef-3b2a-45af-b859-2456dca1bb1f
+            providerRef: 63360be0-db5c-4266-9096-011e2f1f0634
+            deprecated: false
+            icon:
+              url: "/rest/v1/files/9ab59a45-05bb-4781-ace1-bb41675ba867"
+              type: INTERNAL
+            communities:
+              - 3bdf8005-5685-3ef5-b132-de4681963fb6
+            apis:
+              - 8294372b-5037-4501-b5da-95dad13fcf96
+              - f8530d9e-89bb-470e-973f-12ea3077e37f
+            plans:
+              - 16760aab-0d4b-4120-86e4-ad0aa03fb48e
+            follower: true
+            rating: 0
+            externalRefKey: 3a0f1390-4025-4d37-b021-4aa8af25643f
+          - name: SoftwareAG APIPortal
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 6659ded2-d37b-4602-9ff3-dee68aa1296b
+            deprecated: false
+            communities:
+              - 3bdf8005-5685-3ef5-b132-de4681963fb6
+            apis:
+              - e4a84d8e-5d20-4bd0-a761-3d8581924276
+              - 81074b45-ea22-4b67-806e-22d9abd237ca
+            plans:
+              - 5f5947f7-ffb5-4534-bf44-360aceca9b24
+            follower: false
+            rating: 0
+            summary: This is the summary of Package
+            description: This is the description of Package
+        count: 2
+        _links:
+          _self: "/rest/v1/packages/search?page=0"
+    PlanIdsExample:
+      value:
+        - 16760aab-0d4b-4120-86e4-ad0aa03fb48e
+        - 5f5947f7-ffb5-4534-bf44-360aceca9b24
+    LinkedAPIListExample:
+      value:
+        result:
+          - id: 8294372b-5037-4501-b5da-95dad13fcf96
+            name: petStore3
+            summary: 'This is a sample server Petstore server.  You can find out more about
+            Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For
+            this sample, you can use the api key `special-key` to test the authorization filters.'
+            version: 1.0.5
+            type: REST
+            externalRefKey: 30f82749-704c-4b35-8b16-4e18fdfcdc0c
+          - id: f8530d9e-89bb-470e-973f-12ea3077e37f
+            name: petStore4
+            summary: 'This is a sample server Petstore server.  You can find out more about
+            Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For
+            this sample, you can use the api key `special-key` to test the authorization filters.'
+            version: 1.0.5
+            type: REST
+            externalRefKey: 4b44b171-0d9a-49d2-baab-42b142e23348
+        count: 2
+        _links:
+          _self: "/rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f/apis?page=0"
+    LinkedPlanListExample:
+      value:
+        result:
+          - name: Gold Plan
+            owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 16760aab-0d4b-4120-86e4-ad0aa03fb48e
+            providerRef: 63360be0-db5c-4266-9096-011e2f1f0634
+            icon:
+              url: "/rest/v1/files/e4f80c77-c3f9-4c9e-8922-344292e64a46"
+              type: INTERNAL
+            cost:
+              value: '1000'
+            terms: T&C
+            license: LGPL
+            deprecated: false
+            enforcements:
+              - name: 'Throttling '
+                properties:
+                  - key: Maximum Request Quota
+                    value: '10'
+                  - key: Validation Interval
+                    value: 1 minutes
+                  - key: Violation Message
+                    value: max req count reached
+            externalRefKey: ab047335-8398-48d2-a669-e3128fbe4429
+        count: 1
+        _links:
+          _self: "/rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f/plans?page=0"
+
+    LinkedCommunitiesExample:
+      value:
+        result:
+          - id: 3bdf8005-5685-3ef5-b132-de4681963fb6
+            name: Public Community
+        count: 1
+        _links:
+          _self: "/rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f/communities?page=0"
+
+    LinkedTopicsExample:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 589e41b9-a7e8-4494-a387-1ab40638e9ed
+            modified: 1616681699343
+            created: 1616666209768
+            flagged: false
+            upvotes:
+              - 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            stream:
+              type: PACKAGE
+              id: 532e53ef-3b2a-45af-b859-2456dca1bb1f
+            content:
+              value: '{"ops":[{"insert":"how to consume this package\n"}]}'
+              type: rich
+            pinned: false
+            person:
+              id: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+              firstName: Administrator
+              lastName: System
+            comments: 1
+        count: 1
+        _links:
+          _self: "/rest/v1/packages/532e53ef-3b2a-45af-b859-2456dca1bb1f/topics?page=0"
+
+    "403":
+      value:
+        code: 403
+        message: Insufficient privileges
+    APIsLinked:
+      value:
+        code: 200
+        message: API(s) linked successfully from package
+
+    APIsUnlikned:
+      value:
+        code: 200
+        message: API(s) unlinked successfully from package
+
+    PlansLinked:
+      value:
+        code: 200
+        message: Plan(s) linked successfully from package
+
+    PackageFollowed:
+      value:
+        code: 200
+        message: Follow entity successful
+
+    PackageUnFollowed:
+      value:
+        code: 200
+        message: Un-Follow entity successful
+
+    PlansUnlikned:
+      value:
+        code: 200
+        message: Plan(s) unlinked successfully from package
+
+    NotFound:
+      value:
+        code: 404
+        message: Unable to find the package with the given id
+
+    BadRequest:
+      value:
+        code: 400
+        message: The payload given is invalid
+
+    Unauthorized:
+      value:
+        code: 401
+        message: Invalid credentials
+
+    Forbidden:
+      value:
+        code: 403
+        message: Insufficient privileges
+
+    Package:
+      value:
+        name: Gold package
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        deprecated: false
+        icon:
+          url: "/rest/v1/files/9ab59a45-05bb-4781-ace1-bb41675ba867"
+          type: INTERNAL
+        communities:
+          - 3bdf8005-5685-3ef5-b132-de4681963fb6
+        apis:
+          - 8294372b-5037-4501-b5da-95dad13fcf96
+          - f8530d9e-89bb-470e-973f-12ea3077e37f
+        plans:
+          - 16760aab-0d4b-4120-86e4-ad0aa03fb48e
+        providerRef: a1b3a59c-0639-4260-a9a6-c75c78fcb62d
+        follower: true
+        rating: 0
+
+    NewPackage:
+      value:
+        name: Gold package
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        deprecated: false
+        communities:
+          - 3bdf8005-5685-3ef5-b132-de4681963fb6
+        apis:
+          - 8294372b-5037-4501-b5da-95dad13fcf96
+          - f8530d9e-89bb-470e-973f-12ea3077e37f
+        plans:
+          - 16760aab-0d4b-4120-86e4-ad0aa03fb48e
+        providerRef: a1b3a59c-0639-4260-a9a6-c75c78fcb62d
+    RatingResponse:
+      value:
+        total: 3
+        average: 3.5
+        rating: 4.0
+
+    RatingExample:
+      value:
+        rating: 4
+    TopicListExample:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 7e729e3c-f767-4a55-8c15-14e66b51abdb
+            flagged: false
+            upvotes: [ ]
+            downvotes: [ ]
+            pinned: false
+            stream:
+              type: PACKAGE
+              id: 5d248c0b-4ec7-4eb5-b514-7c2e726afb4d
+            tags:
+              - tag
+        count: 1
+        _links:
+          _self: /rest/v1/packages/5d248c0b-4ec7-4eb5-b514-7c2e726afb4d/topics?page=0
+    PackageCreatedExample:
+      value:
+        id: 015a2458-9f62-4ac6-a97e-8c2454c0ef61
+        _self: /rest/v1/packages/015a2458-9f62-4ac6-a97e-8c2454c0ef61
+    UpdateState:
+      value:
+        code: 200
+        message: Lifecycle state is updated successfully
+    InvalidStateUpdate:
+      value:
+        code: 400
+        message: Invalid state transition from 'RETIRED' state to 'LIVE' state
+
+security:
+  - accesstoken: [ ]
+  - bearerAuth: [ ]

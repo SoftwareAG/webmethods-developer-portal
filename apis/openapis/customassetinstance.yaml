@@ -1,0 +1,1035 @@
+openapi: 3.0.1
+info:
+  title: Portal Manage Custom Asset Instances
+  version: "10.15"
+  description: |-
+    ## Overview
+    Developer Portal allows to publish/create an instance of the type definition which is alread created in the system.
+
+    This endpoint provides Custom Asset Instance management capability of an Developer Portal. Following functionalities can be achieved byt using this endpoint,
+
+    ## Custom Asset Instance CRUD
+      - Create custom asset instance
+      - Modify custom asset instance
+      - Delete an custom asset instance
+
+    ## Custom Asset Instance search
+      - Retrieive all custom asset instance of particular type
+      - Get number of custom asset instance of particular type
+      - Retrieve the custom asset instance based on search criteria
+      - Retrieve the particular custom asset instance
+
+    ## Custom Asset Instance collobration information
+      - Follow an custom asset instance
+      - Retrieve the followers count for an custom asset instance
+      - Retrieve the followers of an custom asset instance
+      - Rate an custom asset
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  "/types/{type}/instances":
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+    get:
+      summary: Retrieve all the custom asset instance of given type in Developer Portal
+      description: |-
+        Endpoint to retrieve the list of all custom asset instance of given type in Developer Portal
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example: |-
+                {
+                    "result": [
+                        {
+                            "name": "obj1",
+                            "owner": "200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4",
+                            "id": "59ec3066-c2cc-4e4b-a802-b8df18808445",
+                            "modified": "2022-04-18T12:36+0000",
+                            "created": "2022-04-18T12:36+0000",
+                            "follower": false,
+                            "Priority": 1,
+                            "Content": "Issue in API",
+                            "Title": "Ticket1"
+                        }
+                    ],
+                    "count": 1,
+                    "_links": {
+                        "_self": "/portal/rest/v1/types/ticket/instances/?page=0"
+                    }
+                }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create an custom asset instance of given type in Developer Portal
+      description: |-
+        Endpoint to create an custom asset instance of given type in Developer Portal
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of an Custom asset instance can be provided. It is mandatory.
+                  example: Ticket-2300
+                description:
+                  type: string
+                  description: Description of an Custom asset instance can be provided.
+                summary:
+                  type: string
+                  description: Summary of an Custom asset instance can be provided.
+                tags:
+                  type: array
+                  description: Name of an Custom asset instance can be provided.
+                  example: Ticket-2300
+                  items:
+                    type: object
+                version:
+                  type: string
+                  description: Version of an Custom asset instance.
+                Field1:
+                  type: string
+                  description: The key1 is a sample. It should be replaced with the actual field name from type definition
+
+            examples:
+              Sample Ticket:
+                value: |-
+                  {
+                    "name": "Ticket-2300",
+                    "Title": "API Gallery page issue",
+                    "Content": "Issue in API",
+                    "Priority": 1,
+                    "Project": ["DPO", "Server"]
+                  }
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  _self:
+                    type: string
+              examples:
+                created:
+                  value:
+                    id: c98d046b-1356-4216-8904-d89035ea66df
+                    _self: /rest/v1/apis/c98d046b-1356-4216-8904-d89035ea66df
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                400:
+                  $ref: '#/components/examples/400'
+
+  '/types/{type}/instances/_count':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+    get:
+      summary: Retrieve the count of Custom asset instances of given type in Developer Portal
+      description: |-
+        Endpoint to get the number of Custom asset instances of given type in Developer Portal
+      responses:
+        '200':
+          description: Retrieval of Count of Custom asset instances Successful
+          content:
+            plain/text:
+              example: 10
+
+  '/types/{type}/instances/{id}':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    get:
+      summary: Retrieve an custom asset instance by an ID
+      description: |-
+        Endpoint to obtain details of particular custom asset instance of given type based on ID
+
+        *Endpoint can be accessed only by a user having **READ** permission*
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instance'
+              examples:
+                200:
+                  $ref: '#/components/examples/Instance'
+
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the requested instance
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update an Custom asset instance of given type in Developer Portal
+      description: |-
+        Endpoint to modify an custom asset instance in an Developer Portal.
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instance'
+            examples:
+              200:
+                $ref: '#/components/examples/Instance'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instance'
+              examples:
+                200:
+                  $ref: '#/components/examples/Instance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                400:
+                  $ref: '#/components/examples/400'
+
+    delete:
+      summary: Delete an Custom asset instance of given type by an ID
+      description: |-
+        Endpoint to delete an Custom asset instance of given type by an ID in an Developer Portal.
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      responses:
+        '204':
+          description: 'No content'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the requested instance
+
+  '/types/{type}/instances/{id}/topics':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+      - name: page
+        in: query
+        description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+        required: false
+        schema:
+          type: integer
+    get:
+      summary: Gets the Topics created for the custom asset
+      description: |-
+        Endpoint to obtain list of topics that are created for the custom asset
+
+        *Endpoint can be accessed only by a user having **READ** permission for the particualr custom asset*
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponseTopics'
+              examples:
+                200:
+                  $ref: '#/components/examples/SearchResponseTopicSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the requested API
+
+  '/types/{type}/instances/{id}/followers':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    get:
+      summary: Get followers of an custom asset intance
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        firstname:
+                          type: string
+                        lastname:
+                          type: string
+                        picture:
+                          type: string
+                        id:
+                          type: string
+                  count:
+                    type: number
+                  links:
+                    type: object
+                    properties:
+                      _self:
+                        type: string
+                      _next:
+                        type: string
+                      _previous:
+                        type: string
+              examples:
+                Followers:
+                  value:
+                    result:
+                      - id: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+                        firstname: Administrator
+                        lastname: System
+                        pictureUrl: null
+                    count: 1
+                    _links:
+                      _self: /rest/v1/types/ticket/instances/0938f456-d34f-49ea-8a32-dc72ee13a8a3/followers?page=0
+      description: |-
+        Endpoint to obtain followers list of an custom asset instance
+    put:
+      summary: Follow/ Un-Follow custom asset instance
+      description: |-
+        Endpoint to follow or unfollow an custom asset instance
+
+      responses:
+        '200':
+          description: 'The response when the follow/ un-follow is successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdationResponse'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 200
+                    message: Follow entity successful
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: 'The response when the requested custom asset instance is not found in Developer Portal'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the instance with id [fefcfc8f-0a77-4976-b5aasd4-eeaa53884f3b]
+
+  '/types/{type}/instances/{id}/followers/_count':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    get:
+      summary: Retrieve the count of followers for an custom asset instance
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                description: Number of followers in the custom asset instance
+              example:
+                3
+      description: |-
+        Endpoint to get the number of followers fo an custom asset instance
+
+  '/types/{type}/instances/{id}/rate':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    put:
+      summary: Rate an Custom asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingRequest'
+            examples:
+              RatingRequest:
+                $ref: '#/components/examples/RatingRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+              examples:
+                RatingResponse:
+                  $ref: '#/components/examples/RatingResponse'
+      description: |-
+        Endpoint to rate an custom asset
+
+        *Endpoint can be accessed only by a user having **CUSTOM ASSET READ** permission*
+    get:
+      summary: Get the rating for an Custom asset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+              examples:
+                RatingResponse:
+                  $ref: '#/components/examples/RatingResponse'
+      description: |-
+        Endpoint to get rating of an Custom asset
+
+        *Endpoint can be accessed only by a user having **CUSTOM ASSET READ** permission*
+
+  '/types/{type}/instances/search':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+    post:
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      summary: Search Custom asset instances of given type based on filter
+      description: |-
+        Endpoint to obtain search custom asset instances based on the filter criterias
+
+        *Endpoint can be accessed only by a user having **READ** permission*
+      requestBody:
+        description: Payload for search
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conjuction:
+                  type: string
+                  description: Condition for filters
+                  enum:
+                    - AND
+                    - OR
+                    - NOT
+                    - MUST_NOT
+                criterias:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                      values:
+                        type: array
+                        items:
+                          type: string
+                      opertaion:
+                        type: string
+                        enum:
+                          - CONTAINS
+                          - EQUALS
+                sort:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      order:
+                        type: string
+                        enum:
+                          - ASC
+                          - DSC
+            examples:
+              SearchPayload:
+                value:
+                  conjunction: AND
+                  criterias:
+                    - field: Name
+                      values:
+                        - 1203*
+                      operation: EQUALS
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example: |-
+                {
+                   "result": [
+                       {
+                           "name": "Ticket-2300",
+                           "owner": "200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4",
+                           "id": "59ec3066-c2cc-4e4b-a802-b8df18808445",
+                           "modified": "2022-04-19T11:27+0000",
+                           "follower": false,
+                           "Priority": 1,
+                           "Content": "Issue in API",
+                           "Title": "API Gallery page issue"
+                       },
+                       {
+                           "name": "Ticket-2301",
+                           "owner": "200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4",
+                           "id": "db1ec2c5-a1bd-483b-97f4-d0ab6139dee0",
+                           "modified": "2022-04-19T11:35+0000",
+                           "follower": false,
+                           "Priority": 1,
+                           "Content": "Issue in API",
+                           "Title": "API Gallery page issue"
+                       }
+                   ],
+                   "count": 2,
+                   "_links": {
+                       "_self": "/portal/rest/v1/types/ticket/instances/?page=0"
+                   }
+                 }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/types/{type}/instances/{id}/logo':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    put:
+      summary: Update the logo of the given custom asset instance
+      description: Endpoint that is used to update the logo of the given custom asset instance
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: object
+                  description: New Logo of the custom asset instance to be uploaded.
+            example: |
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh
+              Content-Disposition: form-data; name="file"; filename="Logo.jpg"
+              Content-Type: image/jpeg
+
+
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh--
+      responses:
+        '200':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/types/{type}/instances/{id}/attachments':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+      - name: id
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique custom asset instance id
+    put:
+      summary: Update the attachments of the given custom asset instance
+      description: Endpoint that is used to update the attachments of the given custom asset instance
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: object
+                  description: New attachment of the custom asset instance to be uploaded.
+            example: |
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh
+              Content-Disposition: form-data; name="file"; filename="Spec.json"
+              Content-Type: application/json
+
+
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh--
+      responses:
+        '200':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/types/{type}/instances/files':
+    parameters:
+      - name: type
+        in: path
+        schema:
+          type: string
+        required: true
+        description: Unique type id of the custom asset
+        example: ticket
+    put:
+      summary: Upload the file to get unique id which can be used during instance creation
+      description: Endpoint that is used to Upload the file to get unique id which can be used during instance creation
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: object
+                  description: New attachment of the custom asset instance to be uploaded.
+            example: |
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh
+              Content-Disposition: form-data; name="file"; filename="Spec.json"
+              Content-Type: application/json
+
+
+              ------WebKitFormBoundaryWh7YIEN5mdUWFbkh--
+      responses:
+        '200':
+          $ref: '#/components/responses/CreationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+    SearchResponse:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+    CreationResponse:
+      description: The response when an entity is created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+          examples:
+            CreationResponse:
+              $ref: '#/components/examples/CreatedResponse'
+
+  schemas:
+    CreatedResponse:
+      type: object
+      properties:
+        id:
+          description: Identifier of the newly created object
+          type: string
+        _self:
+          description: Self reference of the newly created object
+          type: string
+    UpdationResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    RatingRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+    RatingResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        average:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+    SearchResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Instance'
+        count:
+          type: integer
+        _links:
+          type: object
+          additionalProperties:
+            type: string
+    SearchResponseTopics:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        count:
+          type: integer
+        _links:
+          type: object
+          additionalProperties:
+            type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    Instance:
+      allOf:
+        - type: object
+          properties:
+            name:
+              type: string
+              description: Name of an Custom asset instance can be provided. It is mandatory.
+              example: Ticket-2300
+            description:
+              type: string
+              description: Description of an Custom asset instance can be provided.
+            summary:
+              type: string
+              description: Summary of an Custom asset instance can be provided.
+            tags:
+              type: array
+              description: Name of an Custom asset instance can be provided.
+              example: Ticket-2300
+              items:
+                type: object
+            version:
+              type: string
+              description: Version of an Custom asset instance.
+            Field1:
+              type: string
+              description: The key1 is a sample. It should be replaced with the actual field name from type definition
+    Topic:
+      type: object
+      required:
+        - name
+      properties:
+        owner:
+          type: string
+        id:
+          type: string
+        modified:
+          type: string
+        created:
+          type: string
+        flagged:
+          type: boolean
+        content:
+          type: object
+          properties:
+            value:
+              type: string
+            type:
+              type: string
+        comments:
+          type: integer
+        pinned:
+          type: boolean
+        stream:
+          type: object
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+  examples:
+    CreatedResponse:
+      value:
+        id: 52c0b766-8bdc-4932-93f2-c7bcb8a16750
+        _self: /rest/v1/files/52c0b766-8bdc-4932-93f2-c7bcb8a16750
+    RatingRequest:
+      value:
+        rating: 3
+    RatingResponse:
+      value:
+        total: 3
+        average: 3.5
+        rating: 4
+    UpdatePreference:
+      value:
+        code: 200
+        message: Preferences updated successfully
+    401:
+      value:
+        code: 401
+        message: Invalid credentials
+    403:
+      value:
+        code: 403
+        message: Insufficient privileges
+    404:
+      value:
+        code: 404
+        message: Unable to find the requested instance
+    400:
+      value:
+        code: 400
+        message: JSON Parse error
+    Instance:
+      value:
+        {
+          "name": "Ticket-2300",
+          "Title": "API Gallery page issue",
+          "Content": "Issue in API",
+          "Priority": 1,
+          "Project": ["DPO", "Server"]
+        }
+    SearchResponseTopicSummary:
+      value:
+        result:
+          - owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+            id: 8e38ee64-2306-4208-823a-ac9aab5cc43b
+            modified: 1617013155719
+            created: 1617013155719
+            flagged: false
+            stream:
+              type: CUSTOM_ASSET
+              id: d6376456-9d08-4a3e-b44d-7f40bb206d51
+            content:
+              value: '{"ops":[{"insert":"TestTopic2\n"}]}'
+              type: rich
+            pinned: false
+            person:
+              id: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+              firstName: Administrator
+              lastName: System
+            comments: 0
+        count: 1
+        _links:
+          _self: /rest/v1/apis/cb996fe0-95c5-4ba3-8212-148ddd99c15b/topics?page=0

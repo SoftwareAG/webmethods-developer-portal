@@ -59,6 +59,8 @@ spec:
               value: "true"
             - name: node.master
               value: "true"
+            - name: xpack.security.enabled
+              value: "false"
 {{- end }}
 {{- if eq $.Values.deploymentType "single" }}
             - name: cluster.name
@@ -69,6 +71,8 @@ spec:
               value: {{ index $.Values "applications" $app "networkHost" }}
             - name: ES_JAVA_OPTS
               value: {{ index $.Values "applications" $app "heapConfig" }}
+            - name: xpack.security.enabled
+              value: "false"
 {{- end }}
           image: {{ index $.Values "applications" $app "image" "registry" }}/{{ index $.Values "applications" $app "image" "imageName" }}:{{ index $.Values "applications" $app "image" "imageTag" }}
           imagePullPolicy: {{ index $.Values "applications" $app "image" "pullPolicy" }}

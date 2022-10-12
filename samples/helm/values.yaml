@@ -7,7 +7,7 @@ applications:
     image:
       registry: "store/softwareag"
       imageName: "devportal"
-      imageTag: "10.11.0.1"
+      imageTag: "10.15"
     paid:
       single:
         replica: 1
@@ -39,7 +39,7 @@ applications:
     image:
       registry: "docker.elastic.co/elasticsearch"
       imageName: "elasticsearch"
-      imageTag: "7.7.1"
+      imageTag: "8.2.3"
       pullPolicy: IfNotPresent
     esHttpPort: 9200
     ports:
