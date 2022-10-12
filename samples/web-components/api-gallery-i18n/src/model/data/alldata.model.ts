@@ -79,7 +79,7 @@ export class AllData {
   }
   
   export interface Attachment {
-    name: Name
+    name: string
     summary: any
     description: any
     uri: string

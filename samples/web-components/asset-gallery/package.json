@@ -1,0 +1,25 @@
+{
+  "name": "api-gallery-group",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "webpack serve",
+    "lint": "eslint",
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc --init"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "eslint": "^7.27.0",
+    "ts-loader": "^9.2.2",
+    "typescript": "^4.2.4",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^4.7.4"
+  }
+}

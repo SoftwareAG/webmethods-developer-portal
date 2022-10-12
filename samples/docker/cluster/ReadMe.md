@@ -10,5 +10,5 @@
 ![Docker Cluster](images/docker_cluster.png "Cluster Deployment")
 
    * It creates a network called "devportal-nw" which will be used for communication between Elasticsearch and Developer Portal
-   * It brings up a three container of Elasticsearch version 7.13.1 named "devportal-es-0", "devportal-es-1" and "devportal-es-2"
+   * It brings up a three container of Elasticsearch version 8.2.3 named "devportal-es-0", "devportal-es-1" and "devportal-es-2"
    * It brings up a single container of DevPortal Bundle named "devportal_0" and "devportal_1"

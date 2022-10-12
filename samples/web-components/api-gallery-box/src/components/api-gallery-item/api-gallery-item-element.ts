@@ -55,14 +55,7 @@ export class ApiGalleryItemElement extends AbstractPortalElement {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                //animation-name: showsmooth;
-                //animation-duration: 4s;
             }
-
-            /*@keyframes showsmooth {
-                from {opacity: 0;}
-                to {opacity: 1;}
-            }*/
 
             :host {
                 display: flex;

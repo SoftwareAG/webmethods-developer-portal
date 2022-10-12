@@ -2,11 +2,11 @@
     
     `kubectl create -f es-svc.yaml`
 
-* Create a stateful set with 1 replicas of elasticsearch of version 7.7.1
+* Create a stateful set with 1 replicas of elasticsearch of version 8.2.3
     
     `kubectl create -f elasticsearch.yaml`
 
-* Create a stateful set with 1 replicas of devportal of version 10.11.0.1
+* Create a stateful set with 1 replicas of devportal of version 10.15
     
     `kubectl create -f devportal.yaml`
 
