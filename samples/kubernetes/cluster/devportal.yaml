@@ -32,7 +32,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
       containers:
         - name: devportal
-          image: store/softwareag/devportal:10.11.0.1
+          image: store/softwareag/devportal:10.15
           resources:
             limits:
               cpu: "4"

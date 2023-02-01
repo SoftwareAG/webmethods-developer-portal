@@ -1,0 +1,826 @@
+openapi: 3.0.1
+info:
+  title: Portal Manage Custom Asset Type Definition
+  version: "10.15"
+  description: |-
+    ## Overview
+    Developer Portal supports the API Providers / API Administrators to publish any custom assets in addition to APIs and Packages.
+    Prior to that, one needs to create the type definition (or the template) which includes the meta data (or properties) for each such kind of custom asset.
+
+    This endpoint provides Type Definition management capability in Developer Portal.
+    Following functionalities can be achieved by using this endpoint.
+
+    ## Type Definition CRUD
+      - Create type definition
+      - Modify type definition
+      - Delete an particular type definition
+
+    ## Type Definition search
+      - Retrieive all type definitions
+      - Get number of type definitions created on developer portal
+      - Retrieve the type definition based on search criteria
+      - Retrieve the particular type definition
+
+servers:
+  - url: http://localhost:18101/portal/rest/v1
+    description: Development server
+
+paths:
+  "/types":
+    get:
+      summary: Retrieve all the Type Definitions in the Developer Portal
+      description: |-
+        Endpoint to retrieve the list of all Type Definition in Developer Portal.
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example: |-
+                {
+                    "result": [
+                        {
+                            "name": "ticket",
+                            "owner": "200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4",
+                            "id": "ticket",
+                            "documentType": "TYPE_DEFINITION",
+                            "fields": [
+                                {
+                                    "type": "STRING",
+                                    "name": "Title",
+                                    "displayName": "Title",
+                                    "mandatory": true,
+                                    "value": null
+                                },
+                                {
+                                    "type": "TEXT",
+                                    "name": "Content",
+                                    "displayName": "Content",
+                                    "mandatory": true,
+                                    "value": null
+                                },
+                                {
+                                    "type": "NUMBER",
+                                    "name": "Priority",
+                                    "displayName": "Priority",
+                                    "mandatory": true,
+                                    "value": null
+                                }
+                            ]
+                        }
+                    ],
+                    "count": 1,
+                    "_links": {
+                        "_self": "/portal/rest/v1/types?page=0"
+                    }
+                }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create an Type Definition in an Devloper Portal
+      description: |-
+        Endpoint to Create an Type Definition in an Devloper Portal
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of an Type definition can be provided
+                  example: Blog
+                summary:
+                  type: string
+                  description: Summary of an Type Definition
+                description:
+                  type: string
+                  description: Description for an Type Definition
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      displayName:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - ENUM
+                          - NUMBER
+                          - BOOLEAN
+                          - STRING
+                          - STRING_ARRAY
+                          - TEXT
+                          - DATE_TIME
+                          - IMAGE
+                          - FILE
+                      mandatory:
+                        type: boolean
+                      value:
+                        type: string
+                        description: Default value. Based on field type corresponding data type need to be sent.
+                      acceptedValues:
+                        description: This field is applicable for only ENUM field type. List of possible values can be set
+                        type: array
+                        items:
+                          type: object
+
+            examples:
+              Create an Type Definition:
+                value: |-
+                  {
+                     "name": "ticket",
+                     "fields": [
+                       {
+                         "name": "Title",
+                         "displayName": "Title",
+                         "type": "STRING",
+                         "mandatory": true
+                       },
+                       {
+                         "name": "Content",
+                         "displayName": "Content",
+                         "type": "TEXT",
+                         "mandatory": true
+                       },
+                       {
+                         "name": "Priority",
+                         "displayName": "Priority",
+                         "type": "NUMBER",
+                         "mandatory": true,
+                         "value": 2
+                       },
+                       {
+                         "name": "Sprint",
+                         "displayName": "Sprint",
+                         "type": "STRING_ARRAY",
+                         "mandatory": false
+                       },
+                       {
+                         "name": "Department",
+                         "displayName": "Department",
+                         "type": "ENUM",
+                         "mandatory": true,
+                         "acceptedValues": ["IT", "HR", "RnD"]
+                       }
+                     ]
+                   }
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  _self:
+                    type: string
+              examples:
+                200:
+                  value:
+                    id: ticket
+                    _self: /rest/v1/types/ticket
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                400:
+                  $ref: '#/components/examples/400'
+
+  '/types/_count':
+    get:
+      summary: Retrieve the count of Type Definitions in Developer Portal
+      description: |-
+        Endpoint to get the number of Type definitions available in Developer Portal
+      responses:
+        '200':
+          description: Retrieval of Count of Type Definitions Successful
+          content:
+            plain/text:
+              example: 10
+
+  '/types/_ids':
+    get:
+      summary: Retrieve the ids of Type Definitions in Developer Portal
+      description: |-
+        Endpoint to get the ids of Type definitions available in Developer Portal
+      responses:
+        '200':
+          description: Retrieval of ids of Type Definitions Successful
+          content:
+            application/json:
+              example: ["ticket", "blog"]
+
+  '/types/{id}':
+    parameters:
+      - $ref: '#/components/parameters/typeId'
+    get:
+      summary: Retrieve an Type Definition by an ID
+      description: |-
+        Endpoint to obtain details of particular Type Definition based on ID
+
+        *Endpoint can be accessed only by a user having **READ** permission*
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Type'
+              examples:
+                200:
+                  $ref: '#/components/examples/Type'
+
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the requested Type Definition
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update an Type Definition in Developer Portal
+      description: |-
+        Endpoint to update details of particular Type Definition based on ID
+
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      parameters:
+        - $ref: '#/components/parameters/typeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of an Type definition can be provided
+                  example: Blog
+                summary:
+                  type: string
+                  description: Summary of an Type Definition
+                description:
+                  type: string
+                  description: Description for an Type Definition
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      displayName:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - ENUM
+                          - NUMBER
+                          - BOOLEAN
+                          - STRING
+                          - STRING_ARRAY
+                          - TEXT
+                          - DATE_TIME
+                          - IMAGE
+                          - FILE
+                      mandatory:
+                        type: boolean
+                      value:
+                        type: string
+                        description: Default value. Based on field type corresponding data type need to be sent.
+                      acceptedValues:
+                        description: This field is applicable for only ENUM field type. List of possible values can be set
+                        type: array
+                        items:
+                          type: object
+
+            examples:
+              Update an Type Definition:
+                value: |-
+                  {
+                     "name": "ticket",
+                     "fields": [
+                       {
+                         "name": "Title",
+                         "displayName": "Title",
+                         "type": "STRING",
+                         "mandatory": true
+                       },
+                       {
+                         "name": "Content",
+                         "displayName": "Content",
+                         "type": "TEXT",
+                         "mandatory": true
+                       },
+                       {
+                         "name": "Priority",
+                         "displayName": "Priority",
+                         "type": "NUMBER",
+                         "mandatory": true,
+                         "value": 2
+                       },
+                       {
+                         "name": "Sprint",
+                         "displayName": "Sprint",
+                         "type": "STRING_ARRAY",
+                         "mandatory": false
+                       },
+                       {
+                         "name": "Department",
+                         "displayName": "Department",
+                         "type": "ENUM",
+                         "mandatory": true,
+                         "acceptedValues": ["IT", "HR", "RnD"]
+                       }
+                     ]
+                   }
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  _self:
+                    type: string
+              examples:
+                200:
+                  value:
+                    id: ticket
+                    _self: /rest/v1/types/ticket
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                400:
+                  $ref: '#/components/examples/400'
+
+    delete:
+      summary: Delete an Type Definition by an ID
+      description: |-
+        Endpoint to delete an Type Definition from an Developer Portal.
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      parameters:
+        - name: force
+          in: query
+          description: Optional parameter. If value sent as true all the associated instance will be deleted along with the Type Definition
+          required: false
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'No content'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                updated:
+                  summary: Example
+                  value:
+                    code: 404
+                    message: Unable to find the requested Type Definition
+
+  '/types/search':
+    post:
+      parameters:
+        - name: page
+          in: query
+          description: Optional parameter. Defines the page number to be retrieved for the collection. If not specified default value 0 is assumed. By default collection responses are paginated with batches of 10.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Optional parameter. Defines the number of results to be fetched for the current page. If not specified default value configured in system settings will be considered.
+          required: false
+          schema:
+            type: integer
+      summary: Search Type Definition based on filter
+      description: |-
+        Endpoint to obtain search Type Definition based on the filter criterias
+
+        *Endpoint can be accessed only by a user having **READ** permission*
+      requestBody:
+        description: Payload for search
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conjuction:
+                  type: string
+                  description: Condition for filters
+                  enum:
+                    - AND
+                    - OR
+                    - NOT
+                    - MUST_NOT
+                criterias:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                      values:
+                        type: array
+                        items:
+                          type: string
+                      opertaion:
+                        type: string
+                        enum:
+                          - CONTAINS
+                          - EQUALS
+                sort:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      order:
+                        type: string
+                        enum:
+                          - ASC
+                          - DSC
+            examples:
+              SearchPayload:
+                value:
+                  conjunction: AND
+                  criterias:
+                    - field: name
+                      values:
+                        - Tic*
+                      operation: EQUALS
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              example: |-
+                {
+                    "result": [
+                        {
+                            "name": "ticket",
+                            "owner": "200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4",
+                            "id": "ticket",
+                            "documentType": "TYPE_DEFINITION",
+                            "fields": [
+                                {
+                                    "type": "STRING",
+                                    "name": "Title",
+                                    "displayName": "Title",
+                                    "mandatory": true,
+                                    "value": null
+                                },
+                                {
+                                    "type": "TEXT",
+                                    "name": "Content",
+                                    "displayName": "Content",
+                                    "mandatory": true,
+                                    "value": null
+                                },
+                                {
+                                    "type": "NUMBER",
+                                    "name": "Priority",
+                                    "displayName": "Priority",
+                                    "mandatory": true,
+                                    "value": null
+                                }
+                            ]
+                        }
+                    ],
+                    "count": 1,
+                    "_links": {
+                        "_self": "/portal/rest/v1/types?page=0"
+                    }
+                }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/types/{id}/fields/{fieldName}':
+    put:
+      parameters:
+        - $ref: '#/components/parameters/typeId'
+        - name: fieldName
+          in: path
+          required: true
+          description: For which file/image field the default value need to be set
+          schema:
+            type: string
+      summary: Set default value for file/image field
+      description: |-
+        Endpoint to set default value for file/image field in Type Definition
+
+        *Endpoint can be accessed only by a user having **Administrator** or **Provider** role*
+      requestBody:
+        content:
+          multipart/formdata:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: File in binary format
+            examples:
+              File/Image:
+                value: |-
+                  ------WebKitFormBoundaryOBl7vP7ee7F5cESA
+                  Content-Disposition: form-data; name="data"; filename="Victory.jpg"
+                  Content-Type: image/jpeg
+
+
+                  ------WebKitFormBoundaryOBl7vP7ee7F5cESA--
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  _self:
+                    type: string
+              examples:
+                200:
+                  value:
+                    id: 6c2e3e8a-2b94-41b2-a633-abfecf3bd292
+                    _self: /rest/v1/file/6c2e3e8a-2b94-41b2-a633-abfecf3bd292
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            401:
+              $ref: '#/components/examples/401'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            403:
+              $ref: '#/components/examples/403'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            404:
+              $ref: '#/components/examples/404'
+    SearchResponse:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchResponse'
+    UpdatePreference:
+      description: Update preference response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdationResponse'
+          examples:
+            UpdatePreference:
+              $ref: '#/components/examples/UpdatePreference'
+    CreationResponse:
+      description: The response when an entity is created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatedResponse'
+          examples:
+            CreationResponse:
+              $ref: '#/components/examples/CreatedResponse'
+
+  schemas:
+    CreatedResponse:
+      type: object
+      properties:
+        id:
+          description: Identifier of the newly created object
+          type: string
+        _self:
+          description: Self reference of the newly created object
+          type: string
+    UpdationResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    SearchResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Type'
+        count:
+          type: integer
+        _links:
+          type: object
+          additionalProperties:
+            type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    Type:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Unique identification of Type Definition
+            name:
+              type: string
+              description: Name of the Type Definition
+            description:
+              type: string
+              description: Description of the Type Definition
+            summary:
+              type: string
+              description: Summary of the Type Definition
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  displayName:
+                    type: string
+                  type:
+                    type: string
+                    enum:
+                      - ENUM
+                      - NUMBER
+                      - BOOLEAN
+                      - STRING
+                      - STRING_ARRAY
+                      - TEXT
+                      - DATE_TIME
+                      - IMAGE
+                      - FILE
+                  mandatory:
+                    type: boolean
+                  value:
+                    type: string
+                    description: Default value. Based on field type corresponding data type need to be sent.
+                  acceptedValues:
+                    description: This field is applicable for only ENUM field type. List of possible values can be set
+                    type: array
+                    items:
+                      type: object
+
+
+  examples:
+    CreatedResponse:
+      value:
+        id: 52c0b766-8bdc-4932-93f2-c7bcb8a16750
+        _self: /rest/v1/files/52c0b766-8bdc-4932-93f2-c7bcb8a16750
+    UpdatePreference:
+      value:
+        code: 200
+        message: Preferences updated successfully
+    401:
+      value:
+        code: 401
+        message: Invalid credentials
+    403:
+      value:
+        code: 403
+        message: Insufficient privileges
+    404:
+      value:
+        code: 404
+        message: Unable to find the requested API
+    400:
+      value:
+        code: 400
+        message: JSON parse error
+    Type:
+      value:
+        name: ticket
+        owner: 200ceb26-807d-3bf9-9fd6-f4f0d1ca54d4
+        id: ticket
+        documentType: TYPE_DEFINITION
+        fields: [
+          {
+            "type": "STRING",
+            "name": "Title",
+            "displayName": "Title",
+            "mandatory": true,
+            "value": null
+          },
+          {
+            "type": "TEXT",
+            "name": "Content",
+            "displayName": "Content",
+            "mandatory": true,
+            "value": null
+          },
+          {
+            "type": "NUMBER",
+            "name": "Priority",
+            "displayName": "Priority",
+            "mandatory": true,
+            "value": null
+          }
+        ]
+  parameters:
+    typeId:
+      name: id
+      in: path
+      description: Unique Identification of an Type Definition.For example `ticket`
+      required: true
+      allowEmptyValue: false
+      schema:
+        type: string

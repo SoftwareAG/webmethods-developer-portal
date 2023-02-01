@@ -3,11 +3,12 @@ version: '3.7'
 services:
 
   devportal-es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
     container_name: devportal-es
     hostname: devportal-es
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
@@ -20,7 +21,7 @@ services:
         window: 120s
 
   devportal:
-    image: store/softwareag/devportal:10.11.0.1
+    image: store/softwareag/devportal:10.15
     container_name: devportal
     hostname: devportal
     environment:
