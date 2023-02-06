@@ -53,6 +53,7 @@ Built-in webcomponents that can be used in the Developer Portal.
 | 7 | Group by with API Gallery  | api-gallery-grouped | ![Home](api-gallery-grouped/showcase.jpg) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/api-gallery-grouped) |
 | 8 | Youtube video embed  | wc-youtube | ![Home](youtube-video/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/youtube-video) |
 | 9 | Twitter timeline embed  | wc-twitter-timeline | ![Home](twitter-timeline/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/twitter-timeline) |
+| 10 | Swagger UI | customize-swagger-ui | ![API details page](swagger-ui/showcase.png) | [View](https://github.com/school-coder/webmethods-developer-portal/tree/main/samples/web-components/swagger-ui) |
 
 ***NOTE***:
 Refer the product documentation for implementing your own web components.
