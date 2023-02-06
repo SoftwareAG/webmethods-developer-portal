@@ -1,3 +1,50 @@
+Built in Webcomponents of Developer Portal 
+===========================
+
+Web components are a set of web platform APIs that allow you to create new custom, reusable,
+encapsulated HTML tags to use in web pages.
+
+You can use web components to add customized components and widgets to your portal.
+
+How to Use web components for UI customization
+============================================
+![img.png](workflow.png)
+
+### 1. Create a web component
+
+   1. Please follow the instruction available in the web component Read me file on *How to generate the JS file*.
+   
+      ***Example***: To generate the api-gallery-box web component, refer [api-gallery-box README](api-gallery-box/README.md)
+      
+   2. After the web component JS file is available, proceed with the next section to register the web component.
+
+   ***Note***: For the webcomponents that contain JS file already, you could go the second section directly with the available JS file.
+
+### 2. Register a web component
+
+   1. Login as Administrator
+   2. Navigate to Administration -> Themes
+   3. Click `customize` icon in the theme you want to customize
+   4. In the left navigation, choose `Web Components` section
+   5. Register the web component with the file `that you generated in first section`.
+   
+   You have registered the web component registered successfully.
+   Next, the final section on how to render the web component in the UI.
+
+### 3. Insert a web component in UI
+   
+   1. Select the page where the web component to be rendered using `Left navigation` -> `Pages` section.
+   2. Add `Web component` using (+) icon in any layout part in `header` or `footer` from the `Pages` section.
+   3. Select the added web component, Click `Edit' icon. 
+   4. From the dropdown, select the web component registered in the second section. 
+   5. Now, fill in the element name text field.
+      **Refer** Element column of the below built-in webcomponents table for element name.
+      ***Example***: provide `wc-js-google-analytics` as element name for Google Analytics Integration.
+   6. Save the changes and activate the theme.
+
+Built-in webcomponents that can be used in the Developer Portal.
+==================================================================
+
 | # | Name |  Element | Image      | Link |
 |---| ---- | -------- |----------- | ---- |
 | 1 | Google Analytics Integration | wc-js-google-analytics | ![Home](google-analytics/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/raw/main/samples/web-components/google-analytics/src/js/google-analytics.js) |
@@ -10,3 +57,5 @@
 | 8 | Youtube video embed  | wc-youtube | ![Home](youtube-video/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/youtube-video) |
 | 9 | Twitter timeline embed  | wc-twitter-timeline | ![Home](twitter-timeline/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/twitter-timeline) |
 
+***NOTE***:
+Refer the product documentation for implementing your own web component.
