@@ -26,7 +26,7 @@ How to Use web components for UI customization
    2. Navigate to Administration -> Themes
    3. Click `customize` icon in the theme you want to customize
    4. In the left navigation, choose `Web Components` section
-   5. Register the web component with the file `that you generated in first section`.
+   5. Register the web component with the details - Name, description, browse and add file `that you generated in first section`.
    
    You have registered the web component registered successfully.
    Next, the final section on how to render the web component in the UI.
@@ -34,10 +34,10 @@ How to Use web components for UI customization
 ### 3. Insert a web component in UI
    
    1. Select the page where the web component to be rendered using `Left navigation` -> `Pages` section.
-   2. Add `Web component` using (+) icon in any layout part in `header` or `footer` from the `Pages` section.
+   2. Add `Web component` using (+) icon in any layout part where the web component to be inserted.
    3. Select the added web component, Click `Edit' icon. 
-   4. From the dropdown, select the web component registered in the second section. 
-   5. Now, fill in the element name text field.
+   4. From the `Name` dropdown, select the the name of the web component that was given during registered in the second section. 
+   5. Now, fill in the `Element name` text field.
       **Refer** Element column of the below built-in webcomponents table for element name.
       ***Example***: provide `wc-js-google-analytics` as element name for Google Analytics Integration.
    6. Save the changes and activate the theme.
