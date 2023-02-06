@@ -12,10 +12,9 @@ How to Use web components for UI customization
 
 ### 1. Create a web component
 
-   1. Please follow the instructions available in the web component `README' file to generate the web component JS file.
-      +***Example***: To generate the api-gallery-box web component, refer [api-gallery-box README](api-gallery-box/README.md)
+   1. Please follow the instructions available in the web component `README` file to generate the web component JS file.
+      ***Example***: To generate the api-gallery-box web component, refer [api-gallery-box README](api-gallery-box/README.md)
    2. After the web component JS file is available, proceed with the next section to register the web component.
-
     ***Note***: For the webcomponents that contain JS file already, you could go the second section directly with the available JS file.
 
 ### 2. Register a web component
