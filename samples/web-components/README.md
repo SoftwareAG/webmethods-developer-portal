@@ -10,32 +10,30 @@ How to Use web components for UI customization
 ============================================
 ![img.png](workflow.png)
 
-### 1. Create a web component
+### 1. Create a web component as single javascript file
 
-   1. Please follow the instructions available in the web component `README` file to generate the web component JS file.
+   1. Please follow the instructions available in the individual web component readme file to generate the web component as a single JS file.
       ***Example***: To generate the api-gallery-box web component, refer [api-gallery-box README](api-gallery-box/README.md)
-   2. After the web component JS file is available, proceed with the next section to register the web component.
-    ***Note***: For the webcomponents that contain JS file already, you could go the second section directly with the available JS file.
+   
 
 ### 2. Register a web component
 
    1. Login as Administrator
    2. Navigate to Administration -> Themes
-   3. Click `customize` icon in the theme you want to customize
+   3. Click `customize` icon from the list of themes which you want to customize
    4. In the left navigation, choose `Web Components` section
-   5. Register the web component with the details - `Name`, `Description`, browse and add file `that you generated in first section`.
-   
-   You have registered the web component registered successfully.
-   Next, the final section on how to render the web component in the UI.
+   5. Register the web component with the details - `Name`, `Description` and the file created in the first step.
 
 ### 3. Insert a web component in UI
-   
+
+The registered web component can be inserted to any pages available under pages section. To insert the web component in a particular page,
+
    1. Select the page where the web component to be rendered using `Left navigation` -> `Pages` section.
-   2. Add `Web component` using (+) icon in any layout part where the web component to be inserted.
+   2. Select any layout in the page. Add `Web component` using (+) icon where the web component to be inserted.
    3. Select the added web component, Click `Edit' icon. 
-   4. From the `Name` dropdown, select the the name of the web component that was given during registered in the second section. 
+   4. From the `Name` dropdown, select the the name of the web component defined in the second step. 
    5. Now, fill in the `Element name` text field.
-      +.**Refer** Element column of the below built-in webcomponents table for element name.
+      +.**Refer** Provider the element name mentioned in the individual web component readme file.
       +.***Example***: Fill in `wc-js-google-analytics` as element name for Google Analytics Integration.
    6. Save the changes and activate the theme.
 
