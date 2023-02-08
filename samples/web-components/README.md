@@ -37,6 +37,14 @@ The registered web component can be inserted to any pages available under pages 
       +.***Example***: Fill in `wc-js-google-analytics` as element name for Google Analytics Integration.
    6. Save the changes and activate the theme.
 
+Web components considerations
+=============================
+
+Remember the following points when creating web components:
+   1. Use unique element names.
+   2. The JavaScript file uploaded for a web component must be independent of other files. There should not be any dependency between the uploaded files.
+   3. Element name should have an hyphen (-) based on custom element specification. For example, api-gallery-item
+
 Built-in webcomponents that can be used in the Developer Portal.
 ==================================================================
 
