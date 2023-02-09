@@ -32,9 +32,8 @@ The registered web component can be inserted to any pages available under pages 
    2. Select any layout in the page. Add `Web component` using (+) icon where the web component to be inserted.
    3. Select the added web component, Click `Edit' icon. 
    4. From the `Name` dropdown, select the the name of the web component defined in the second step. 
-   5. Now, fill in the `Element name` text field.
-      +.**Refer** Provider the element name mentioned in the individual web component readme file.
-      +.***Example***: Fill in `wc-js-google-analytics` as element name for Google Analytics Integration.
+   5. Now, fill in the `Element name` text field with element name mentioned in the individual web component readme file.
+      ***Example***: Fill in `wc-js-google-analytics` as element name for Google Analytics Integration.
    6. Save the changes and activate the theme.
 
 Web components considerations
@@ -61,5 +60,4 @@ Built-in webcomponents that can be used in the Developer Portal.
 | 9 | Twitter timeline embed  | wc-twitter-timeline | ![Home](twitter-timeline/showcase.png) | [View](https://github.com/SoftwareAG/webmethods-developer-portal/tree/main/samples/web-components/twitter-timeline) |
 | 10 | Swagger UI | customize-swagger-ui | ![API details page](swagger-ui/showcase.png) | [View](https://github.com/school-coder/webmethods-developer-portal/tree/main/samples/web-components/swagger-ui) |
 
-***NOTE***:
-Refer the product documentation for implementing your own web components.
+For more details, please refer to the product documentation.
