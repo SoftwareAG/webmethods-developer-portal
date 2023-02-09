@@ -1,4 +1,4 @@
-Webcomponents of Developer Portal 
+Web Components in Developer Portal 
 ===========================
 
 Web components are a set of web platform APIs that allow you to create new custom, reusable,
@@ -6,7 +6,7 @@ encapsulated HTML tags to use in web pages.
 
 You can use web components to add customized components and widgets to your portal.
 
-How to Use web components for UI customization
+How to use web components for UI customization
 ============================================
 ![img.png](workflow.png)
 
